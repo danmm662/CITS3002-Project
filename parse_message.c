@@ -21,9 +21,9 @@ struct messageProperties parse_message(char *s){
 		int id;
 		buf = strtok(s, ",");
 
-		if(isnumber(buf) != 0){
+		/*if(isnumber(buf) != 0){
 			//Tell client that they must provide their 3 digit id at start of their message
-		}
+		}*/
 
 		id = atoi(buf);
 
@@ -42,7 +42,7 @@ struct messageProperties parse_message(char *s){
 
 		buf = strtok(NULL, ",");
 
-		if(strcmp(buf, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move it is?
+		if(strcmp(buf, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move the client used?
 			properties.flag = EVEN;
 		}
 		else if(strcmp(buf, "ODD") != 0){
@@ -62,6 +62,6 @@ struct messageProperties parse_message(char *s){
 			}
 			properties.conChoice = num;			
 		}
-		return properties;
-	}
+	}	
+	return properties;
 }
