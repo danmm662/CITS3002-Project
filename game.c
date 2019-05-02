@@ -1,3 +1,5 @@
+#include "game.h"
+
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
 * Copyright 2019 Nicholas Pritchard, Ryan Bunney
@@ -12,18 +14,7 @@
  *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
 
-enum flag{INIT, EVEN, ODD, DOUB, CON};
-
-#define BUFFER_SIZE 1024
 
 int main (int argc, char *argv[]) {
     if (argc < 2) {
@@ -111,36 +102,30 @@ int main (int argc, char *argv[]) {
                 - In the child process (which is associated with client), perform game_playing functionality
                 (or read the messages) 
         **/
+
+        buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
+        int read = recv(client_fd, buf, BUFFER_SIZE, 0);    // Try to read from the incoming client
+
+        if (read < 0){
+            fprintf(stderr,"Client read failed\n");
+             exit(EXIT_FAILURE);	
+         }
+	
+        printf("Client's message: %s\n", buf);
+
+        struct messageProperties p = parse_message(buf);
+
+        switch(p.flag) {
+            case INIT:
+                //handle client sending init message              
+                break;
+            default:
+                //handle client not sending init as their initial message
+                break;
+        }
         
         while (true) {  
-            buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
-            int read = recv(client_fd, buf, BUFFER_SIZE, 0);    // Try to read from the incoming client
-
-            if (read < 0){
-                fprintf(stderr,"Client read failed\n");
-                exit(EXIT_FAILURE);	
-            }
-	
-            printf("Client's message: %s\n", buf);
-
-            switch(parse_message(buf)) {
-                case INIT:
-                    //handle client sending init message
-                    
-                    break;
-                case EVEN:
-                    //client made even move
-                    break;
-                case ODD:
-                    break;
-                case DOUB:
-                    break;
-                case CON:
-                    break;
-                default:
-                    
-                    //invalid message
-            }
+            
 
             buf[0] = '\0';
             sprintf(buf, "My politely respondance");

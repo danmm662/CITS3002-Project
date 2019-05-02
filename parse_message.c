@@ -1,22 +1,20 @@
-//#include "headerfile.h" (replace with header file)
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-enum flag{INIT, EVEN, ODD, DOUB, CON}; //Probably put this into header file
+#include "game.h" 
 
 //Determines what type of message is received, checks the user id,
 //returns the message type and int choice if it is the contains choice
 
-int parse_message(char *s){
+struct messageProperties parse_message(char *s){
 	
-	//First check if it is the INIT message from player attempting to connect
+	//Initialise the properties structure, set default values for it
+	struct messageProperties properties;
+	properties.id = -1;
+	properties.flag = ERR;
+	properties.conChoice = 0;
+
 	if(strcmp(s, "INIT") == 0){
-		//label message with enum CONNECT, let the main program know
-		return INIT;
+		properties.flag = INIT;
 	}
-	else {  //This assumes that message recieved is a move
+	else {  
 		// need to first check if the first 3 characters of received message is a valid user id
 		char *buf;
 		buf = calloc(sizeof(s), sizeof(char));
@@ -34,6 +32,8 @@ int parse_message(char *s){
 			tell client their id is invalid
 		}*/
 		
+		properties.id = id;
+
 		buf = strtok(NULL, ",");
 
 		if(strcmp(buf, "MOV") != 0){
@@ -42,30 +42,26 @@ int parse_message(char *s){
 
 		buf = strtok(NULL, ",");
 
-		if(strcmp(buf, "EVEN") == 0){
-			//let server know client with id x made EVEN move
-			return EVEN;
+		if(strcmp(buf, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move it is?
+			properties.flag = EVEN;
 		}
 		else if(strcmp(buf, "ODD") != 0){
-			//let server know client with id x made ODD move
-			return ODD;
+			properties.flag = ODD;
 		}
 		else if(strcmp(buf, "DOUB") != 0){
-			//let server know client with id x made DOUB move
-			return DOUB;
+			properties.flag = DOUB;
 		}
 		else if(strcmp(buf, "CON") != 0){
+			properties.flag = CON;
+			
 			buf = strtok(NULL, ",");
 			int num = atoi(buf);
 			
 			if(num < 1 || num > 6){
 				//let client know they picked an invalid dice number
 			}
-
-			//let server know client with id x made CON move, choosing num
+			properties.conChoice = num;			
 		}
-		else {
-			//let client know they made an invalid move
-		}
+		return properties;
 	}
 }
