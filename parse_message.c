@@ -62,6 +62,9 @@ struct messageProperties parse_message(char *s){
 			}
 			properties.conChoice = num;			
 		}
+		else {
+			properties.flag = ERR;
+		}
 	}	
 	return properties;
 }

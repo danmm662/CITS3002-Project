@@ -14,8 +14,6 @@
  *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
  */
 
-
-
 int main (int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr,"Usage: %s [port]\n",argv[0]);
