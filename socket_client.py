@@ -32,7 +32,7 @@ try:
     
         exit = False
         # Send data
-        message = 'This is the message.  It will be repeated.'.encode()
+        message = 'INIT'.encode()
         print ('sending "%s"' % message)
         sock.sendall(message)
 

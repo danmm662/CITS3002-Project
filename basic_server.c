@@ -21,6 +21,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+enum flag{INIT, EVEN, ODD, DOUB, CON};
+
 #define BUFFER_SIZE 1024
 
 int main (int argc, char *argv[]) {
@@ -116,17 +118,36 @@ int main (int argc, char *argv[]) {
 
             if (read < 0){
                 fprintf(stderr,"Client read failed\n");
-                exit(EXIT_FAILURE);
+                exit(EXIT_FAILURE);	
             }
+	
+            printf("Client's message: %s\n", buf);
 
-            printf("%s\n", buf);
+            switch(parse_message(buf)) {
+                case INIT:
+                    //handle client sending init message
+                    
+                    break;
+                case EVEN:
+                    //client made even move
+                    break;
+                case ODD:
+                    break;
+                case DOUB:
+                    break;
+                case CON:
+                    break;
+                default:
+                    
+                    //invalid message
+            }
 
             buf[0] = '\0';
             sprintf(buf, "My politely respondance");
 
             err = send(client_fd, buf, strlen(buf), 0); // Try to send something back
-            // printf("Client's message is: %s",buf);
-             sleep(5); //Wait 5 seconds
+             //printf("Client's message is: %s",buf);
+            sleep(5); //Wait 5 seconds
 
             buf[0] = '\0';
             sprintf(buf, "Let the games begin\n");
