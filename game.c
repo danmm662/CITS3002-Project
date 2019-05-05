@@ -1,5 +1,8 @@
 #include "game.h"
 
+int numLives = 10;
+
+
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
 * Copyright 2019 Nicholas Pritchard, Ryan Bunney
@@ -14,9 +17,11 @@
  *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
  */
 
-int main (int argc, char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr,"Usage: %s [port]\n",argv[0]);
+int main(int argc, char *argv[])
+{
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage: %s [port]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -28,8 +33,9 @@ int main (int argc, char *argv[]) {
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (server_fd < 0){
-        fprintf(stderr,"Could not create socket\n");
+    if (server_fd < 0)
+    {
+        fprintf(stderr, "Could not create socket\n");
         exit(EXIT_FAILURE);
     }
 
@@ -40,131 +46,206 @@ int main (int argc, char *argv[]) {
     opt_val = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
 
-    err = bind(server_fd, (struct sockaddr *) &server, sizeof(server));
-    if (err < 0){
-        fprintf(stderr,"Could not bind socket\n");
+    err = bind(server_fd, (struct sockaddr *)&server, sizeof(server));
+    if (err < 0)
+    {
+        fprintf(stderr, "Could not bind socket\n");
         exit(EXIT_FAILURE);
-    } 
+    }
 
     err = listen(server_fd, 128);
-    if (err < 0){
-        fprintf(stderr,"Could not listen on socket\n");
+    if (err < 0)
+    {
+        fprintf(stderr, "Could not listen on socket\n");
         exit(EXIT_FAILURE);
-    } 
+    }
 
     printf("Server is listening on %d\n", port);
 
-    while (true) {
-        socklen_t client_len = sizeof(client);
-        // Will block until a connection is made
-        client_fd = accept(server_fd, (struct sockaddr *) &client, &client_len);
+    socklen_t client_len = sizeof(client);
+    // Will block until a connection is made
+    client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
 
-        if (client_fd < 0) {
-            fprintf(stderr,"Could not establish new connection\n");
+    if (client_fd < 0)
+    {
+        fprintf(stderr, "Could not establish new connection\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /*       
+    setup_game/teardown_game() {} : 
+    * this will set up the initial state of the game (number of rounds, players
+        etc.)/ print out final game results and cancel socket connections. 
+            
+    Accepting multiple connections (we recommend not starting this until after implementing some
+    of the basic message parsing/game playing): 
+    * Whilst in a while loop
+        - Accept a new connection 
+        - Create a child process 
+        - In the child process (which is associated with client), perform game_playing functionality
+        (or read the messages) 
+    **/
+
+    buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
+    sleep(2);
+    int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client
+
+    if (read < 0)
+    {
+        fprintf(stderr, "Client read failed\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("Client's message: %s\n", buf);
+
+    struct messageProperties p;
+    p = parse_message(buf);
+
+    switch (p.flag)
+    {
+    case INIT:
+        memset(buf,0,BUFFER_SIZE);
+        sprintf(buf, "WELCOME,%d\n", playerCode);
+        err = send(client_fd, buf, strlen(buf), 0);
+        if (err < 0)
+        {
+            fprintf(stderr, "Failed to send WELCOME message\n");
             exit(EXIT_FAILURE);
-
-        } 
-        
-        /**
-        The following while loop contains some basic code that sends messages back and forth
-        between a client (e.g. the socket_client.py client). 
-        
-        The majority of the server 'action' will happen in this part of the code (unless you decide
-        to change this dramatically, which is allowed). The following function names/definitions will 
-        hopefully provide inspiration for how you can start to build up the functionality of the server. 
-        
-        parse_message(char *){...} : 
-            * This would be a good 'general' function that reads a message from a client and then 
-            determines what the required response is; is the client connecting, making a move, etc. 
-            * It may be useful having an enum that is used to track what type of client message is received
-            (e.g. CONNECT/MOVE etc.) 
-            
-        send_message() {...}: 
-            * This would send responses based on what the client has sent through, or if the server needs 
-            to send all clients messages
-        
-        play_game_round() {...}: Implements the functionality for a round of the game
-            * 'Roll' the dice (using a random number generator) and then check if the move made by the user
-            is correct
-            * update game state depending on success or failure. 
-            
-        setup_game/teardown_game() {} : 
-            * this will set up the initial state of the game (number of rounds, players
-            etc.)/ print out final game results and cancel socket connections. 
-            
-        Accepting multiple connections (we recommend not starting this until after implementing some
-        of the basic message parsing/game playing): 
-            * Whilst in a while loop
-                - Accept a new connection 
-                - Create a child process 
-                - In the child process (which is associated with client), perform game_playing functionality
-                (or read the messages) 
-        **/
-
-        buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
-        int read = recv(client_fd, buf, BUFFER_SIZE, 0);    // Try to read from the incoming client
-
-        if (read < 0){
-            fprintf(stderr,"Client read failed\n");
-             exit(EXIT_FAILURE);	
-         }
-	
-        printf("Client's message: %s\n", buf);
-
-        struct messageProperties p;
-        p = parse_message(buf);
-
-        switch(p.flag) {
-            case INIT:
-                //handle client sending init message              
-                break;
-            default:
-                //handle client not sending init as their initial message
-                break;
         }
-        
-        while (true) {  
+        break;
+    default:
+        exit(EXIT_FAILURE);
+    }
 
-            buf[0] = '\0';
-            sprintf(buf, "My politely respondance");
+    memset(buf,0,BUFFER_SIZE);
+    sprintf(buf, "Let the games begin!\n");
+    err = send(client_fd, buf, strlen(buf), 0);
 
-            err = send(client_fd, buf, strlen(buf), 0); // Try to send something back
-             //printf("Client's message is: %s",buf);
-            sleep(5); //Wait 5 seconds
-
-            buf[0] = '\0';
-            sprintf(buf, "Let the games begin\n");
-
-            err = send(client_fd, buf, strlen(buf), 0); // Send another thing
-            if (err < 0){
-                fprintf(stderr,"Client write failed\n");
+    while (true)
+    {
+        if (numLives < 1)
+        {
+            memset(buf,0,BUFFER_SIZE);
+            sprintf(buf, "%d,ELIM\n", playerCode);
+            err = send(client_fd, buf, strlen(buf), 0);
+            if (err < 0)
+            {
                 exit(EXIT_FAILURE);
             }
+            exit(EXIT_SUCCESS);
+        }
 
-            read = recv(client_fd, buf, BUFFER_SIZE, 0); // See if we have a response
+        //sleep(1); //Wait 3 seconds
+        memset(buf,0,BUFFER_SIZE);
+        read = recv(client_fd, buf, BUFFER_SIZE, 0); // See if we have a response
+        printf("Client's Message: %s\n", buf);
 
-            if (read < 0){
-                fprintf(stderr,"Client read failed\n");
-                exit(EXIT_FAILURE);
-            }
+        if (read < 0)
+        {
+            fprintf(stderr, "Client read failed\n");
+            exit(EXIT_FAILURE);
+        }
 
-            if (strstr(buf, "move") == NULL) {  // Check if the message contained 'move'
-                fprintf(stderr, "Unexpected message, terminating\n");
-                exit(EXIT_FAILURE);
-            }
+        p = parse_message(buf); //parse the new message and return it to p
+        //buf = calloc(BUFFER_SIZE, sizeof(char));          //reset the buffer to send new messages
+        int *diceRoll = roll_dice();
 
-            buf[0] = '\0';
-            sprintf(buf, "You lose\n");
-
-            err = send(client_fd, buf, strlen(buf), 0); // Send our final response
-
-            if (err < 0){
-                    fprintf(stderr,"Client write failed\n");
+        /*
+            * At the moment, there is a lot of duplicated code in this switch statement... 
+            * This is probably not a good sign, but I was told to keep all the send() and read() statements in here
+            * ... rather than sending them out to another function. We could probably create a function to send the PASS/FAIL messages
+            */
+        switch (p.flag)
+        {
+        case INIT:
+            exit(EXIT_FAILURE); //Here, the client sends another INIT message--not expected so exit()
+        case EVEN:
+            if (check(diceRoll, p.flag, 0))
+            {
+                sprintf(buf, "%d,PASS\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0)
+                {
+                    fprintf(stderr, "PASS messaged failed to send\n");
                     exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                numLives--;
+                sprintf(buf, "%d,FAIL\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0)
+                {
+                    fprintf(stderr, "FAIL messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        case ODD:
+            if (check(diceRoll, p.flag, 0))
+            {
+                sprintf(buf, "%d,PASS\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0)
+                {
+                    fprintf(stderr, "PASS messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                numLives--;
+                sprintf(buf, "%d,FAIL\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0)
+                {
+                    fprintf(stderr, "FAIL messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
             }
 
-            free(buf);
+        case DOUB:
+            if (check(diceRoll, p.flag, 0))
+            {
+                sprintf(buf, "%d,PASS\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0)
+                {
+                    fprintf(stderr, "PASS messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                numLives--;
+                sprintf(buf, "%d,FAIL\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0)
+                {
+                    fprintf(stderr, "FAIL messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        case CON:
+            if (check(diceRoll, p.flag, p.conChoice)) {
+                sprintf(buf, "%d,PASS\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0) {
+                    fprintf(stderr, "PASS messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else {
+                numLives--;
+                sprintf(buf, "%d,FAIL\n", playerCode);
+                err = send(client_fd, buf, strlen(buf), 0);
+                if (err < 0){
+                    fprintf(stderr, "FAIL messaged failed to send\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        default:
+            break; //Exit if our parse message hasn't turned up the right flag.
         }
-
+        //free(buf);
     }
 }

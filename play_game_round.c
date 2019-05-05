@@ -7,6 +7,8 @@
 //typedef enum {INIT, EVEN, ODD, DOUB, CON} flag; 
 
 int * roll_dice() {
+    srand(time(NULL));
+    sleep(1);
     int max = 6;
     int* dice = calloc(2, sizeof(int));
     dice[0] = (rand() % max) + 1;

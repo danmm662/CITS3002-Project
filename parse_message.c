@@ -11,8 +11,8 @@ struct messageProperties parse_message(char *s){
 	properties.flag = ERR;
 	properties.conChoice = 0;
 
-	char *buf;
-	buf = calloc(sizeof(s), sizeof(char));
+	char *buf1;
+	buf1 = calloc(BUFFER_SIZE, sizeof(char));
 
 	if(strcmp(s, "INIT") == 0){
 		properties.flag = INIT;
@@ -21,9 +21,9 @@ struct messageProperties parse_message(char *s){
 		// need to first check if the first 3 characters of received message is a valid user id
 		
 		int id;
-		buf = strtok(s, ",");
+		buf1 = strtok(s, ",");
 
-		id = atoi(buf);
+		id = atoi(buf1);
 
 		//Check if id provided is a valid id or not, tell client if it isn't
 		/*if(!isValidId(id)){
@@ -32,28 +32,28 @@ struct messageProperties parse_message(char *s){
 		
 		properties.id = id;
 
-		buf = strtok(NULL, ",");
+		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf, "MOV") != 0){
+		if(strcmp(buf1, "MOV") != 0){
 			//tell client that message is invalid, must have MOV after id
 		}
 
-		buf = strtok(NULL, ",");
+		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move the client used?
+		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move the client used?
 			properties.flag = EVEN;
 		}
-		else if(strcmp(buf, "ODD") != 0){
+		else if(strcmp(buf1, "ODD") != 0){
 			properties.flag = ODD;
 		}
-		else if(strcmp(buf, "DOUB") != 0){
+		else if(strcmp(buf1, "DOUB") != 0){
 			properties.flag = DOUB;
 		}
-		else if(strcmp(buf, "CON") != 0){
+		else if(strcmp(buf1, "CON") != 0){
 			properties.flag = CON;
 			
-			buf = strtok(NULL, ",");
-			int num = atoi(buf);
+			buf1 = strtok(NULL, ",");
+			int num = atoi(buf1);
 			
 			if(num < 1 || num > 6){
 				//let client know they picked an invalid dice number
@@ -61,6 +61,6 @@ struct messageProperties parse_message(char *s){
 			properties.conChoice = num;			
 		}
 	}	
-	free(buf);
+	//free(buf1);
 	return properties;
 }

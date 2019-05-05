@@ -19,12 +19,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <time.h>
 
 //Global variables/data structures
 #define BUFFER_SIZE 1024
-#define numLives    5
+//#define numLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
 
+extern int numLives;
 extern int **playerInfo;
 //extern int idCode[900] idCode; //May not have to use this at all...
 extern enum {INIT, EVEN, ODD, DOUB, CON, ERR}  flag;
