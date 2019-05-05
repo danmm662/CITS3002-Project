@@ -5,25 +5,23 @@
 
 struct messageProperties parse_message(char *s){
 	
-	//Initialise the properties structure, set default values for it
+	//Initialise the properties structure, sets default values for it
 	struct messageProperties properties;
 	properties.id = -1;
 	properties.flag = ERR;
 	properties.conChoice = 0;
+
+	char *buf;
+	buf = calloc(sizeof(s), sizeof(char));
 
 	if(strcmp(s, "INIT") == 0){
 		properties.flag = INIT;
 	}
 	else {  
 		// need to first check if the first 3 characters of received message is a valid user id
-		char *buf;
-		buf = calloc(sizeof(s), sizeof(char));
+		
 		int id;
 		buf = strtok(s, ",");
-
-		/*if(isnumber(buf) != 0){
-			//Tell client that they must provide their 3 digit id at start of their message
-		}*/
 
 		id = atoi(buf);
 
@@ -62,9 +60,7 @@ struct messageProperties parse_message(char *s){
 			}
 			properties.conChoice = num;			
 		}
-		else {
-			properties.flag = ERR;
-		}
 	}	
+	free(buf);
 	return properties;
 }

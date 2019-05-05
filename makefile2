@@ -7,9 +7,8 @@ PROJECT = game
 HEADERS = $(PROJECT).h
 OBJ     = game.o messages.o game_process.o new_connection.o play_game_round.o parse_message.o
 
-
-C99 = cc -std=c99
-CFLAGS = -Wall -pedantic -Werror
+C99 = gcc -std=c99
+CFLAGS = -Wall -pedantic 
 
 $(PROJECT) : $(OBJ)
 	$(C99) $(CFLAGS) -o $(PROJECT) $(OBJ)

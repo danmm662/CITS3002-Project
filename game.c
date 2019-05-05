@@ -111,7 +111,8 @@ int main (int argc, char *argv[]) {
 	
         printf("Client's message: %s\n", buf);
 
-        struct messageProperties p = parse_message(buf);
+        struct messageProperties p;
+        p = parse_message(buf);
 
         switch(p.flag) {
             case INIT:
@@ -123,7 +124,6 @@ int main (int argc, char *argv[]) {
         }
         
         while (true) {  
-            
 
             buf[0] = '\0';
             sprintf(buf, "My politely respondance");
