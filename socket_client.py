@@ -60,7 +60,7 @@ try:
                 elif "FAIL" in mess:
                     print("Your choice was wrong")
                     message = '100,MOV,ODD'.encode()
-                    sock.sendall('100,MOV,ODD'.encode())
+                    sock.sendall(message)
                     print('sending,"%s"' % message)
                 else:
                     print ( 'received "%s"' % mess)
