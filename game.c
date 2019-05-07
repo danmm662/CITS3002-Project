@@ -44,6 +44,34 @@ void message_fail(int client) {
     free(messbuf);
 }
 
+void message_welcome(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,WELCOME\n", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "WELCOME message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
+
+void message_elim(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,ELIM\n", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "ELIM message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -127,19 +155,10 @@ int main(int argc, char *argv[])
     struct messageProperties p;
     p = parse_message(buf);
 
-    switch (p.flag)
-    {
-    case INIT:
-        memset(buf, 0, BUFFER_SIZE);
-        sprintf(buf, "WELCOME,%d\n", playerCode);
-        err = send(client_fd, buf, strlen(buf), 0);
-        if (err < 0)
-        {
-            fprintf(stderr, "Failed to send WELCOME message\n");
-            exit(EXIT_FAILURE);
-        }
-        break;
-    default:
+    if(p.flag == INIT) {
+        message_welcome(client_fd);
+    } else {
+        fprintf(stderr, "INIT was not the first message received\n");
         exit(EXIT_FAILURE);
     }
 
@@ -147,17 +166,13 @@ int main(int argc, char *argv[])
     sprintf(buf, "Let the games begin!\n");
     err = send(client_fd, buf, strlen(buf), 0);
 
+    srand(time(NULL));
+    
     while (true)
     {
         if (numLives < 1)
         {
-            memset(buf, 0, BUFFER_SIZE);
-            sprintf(buf, "%d,ELIM\n", playerCode);
-            err = send(client_fd, buf, strlen(buf), 0);
-            if (err < 0)
-            {
-                exit(EXIT_FAILURE);
-            }
+            message_elim(client_fd);        
             exit(EXIT_SUCCESS);
         }
 
@@ -173,8 +188,6 @@ int main(int argc, char *argv[])
         }
 
         p = parse_message(buf); //parse the new message and return it to p
-        //buf = calloc(BUFFER_SIZE, sizeof(char));          //reset the buffer to send new messages
-        srand(time(NULL));
         int *diceRoll = roll_dice();
 
         /*
