@@ -39,33 +39,34 @@ try:
         #amount_expected = len(message)
         
         while True: #amount_received < amount_expected:
+            sleep(4)
             data = sock.recv(4096)
-            #amount_received += len(data)
-            if(data != None):
-                mess = data.decode()
-                if "games" in mess:
-                    message = '100,MOV,CON,1'.encode()
-                    print("The games have begun")
-                    sock.sendall(message) # Client has ID 100
-                    print('sending,"%s"' % message)
-                elif "ELIM" in mess:
-                    print("We lost, closing connection")
-                    exit = True
-                    break
-                elif "PASS" in mess:
-                    print("Your choice was correct")
-                    message = '100,MOV,EVEN'.encode()
-                    sock.sendall(message) # Client sends EVEN choice
-                    print('sending,"%s"' % message)
-                elif "FAIL" in mess:
-                    print("Your choice was wrong")
-                    message = '100,MOV,ODD'.encode()
-                    sock.sendall(message)
-                    print('sending,"%s"' % message)
-                else:
-                    print ( 'received "%s"' % mess)
+            # #amount_received += len(data)
+            # if(data != None):
+            #     mess = data.decode()
+            #     if "games" in mess:
+            #         message = '100,MOV,CON,1'.encode()
+            #         print("The games have begun")
+            #         sock.sendall(message) # Client has ID 100
+            #         print('sending,"%s"' % message)
+            #     elif "ELIM" in mess:
+            #         print("We lost, closing connection")
+            #         exit = True
+            #         break
+            #     elif "PASS" in mess:
+            #         print("Your choice was correct")
+            #         message = '100,MOV,EVEN'.encode()
+            #         sock.sendall(message) # Client sends EVEN choice
+            #         print('sending,"%s"' % message)
+            #     elif "FAIL" in mess:
+            #         print("Your choice was wrong")
+            #         message = '100,MOV,EVEN'.encode()
+            #         sock.sendall(message)
+            #         print('sending,"%s"' % message)
+            #     else:
+            #         print ( 'received "%s"' % mess)
             
-                data = None
+            data = None
 
 finally:    
     print ('closing socket')
