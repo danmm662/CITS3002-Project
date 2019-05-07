@@ -2,7 +2,6 @@
 
 int numLives = 10;
 
-
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
 * Copyright 2019 Nicholas Pritchard, Ryan Bunney
@@ -16,6 +15,34 @@ int numLives = 10;
  * Food for thought:
  *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
  */
+
+void message_pass(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,PASS\n", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "PASS message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}    
+
+void message_fail(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,FAIL\n", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "FAIL message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
 
 int main(int argc, char *argv[])
 {
@@ -103,7 +130,7 @@ int main(int argc, char *argv[])
     switch (p.flag)
     {
     case INIT:
-        memset(buf,0,BUFFER_SIZE);
+        memset(buf, 0, BUFFER_SIZE);
         sprintf(buf, "WELCOME,%d\n", playerCode);
         err = send(client_fd, buf, strlen(buf), 0);
         if (err < 0)
@@ -116,7 +143,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    memset(buf,0,BUFFER_SIZE);
+    memset(buf, 0, BUFFER_SIZE);
     sprintf(buf, "Let the games begin!\n");
     err = send(client_fd, buf, strlen(buf), 0);
 
@@ -124,7 +151,7 @@ int main(int argc, char *argv[])
     {
         if (numLives < 1)
         {
-            memset(buf,0,BUFFER_SIZE);
+            memset(buf, 0, BUFFER_SIZE);
             sprintf(buf, "%d,ELIM\n", playerCode);
             err = send(client_fd, buf, strlen(buf), 0);
             if (err < 0)
@@ -135,7 +162,7 @@ int main(int argc, char *argv[])
         }
 
         //sleep(1); //Wait 3 seconds
-        memset(buf,0,BUFFER_SIZE);
+        memset(buf, 0, BUFFER_SIZE);
         read = recv(client_fd, buf, BUFFER_SIZE, 0); // See if we have a response
         printf("Client's Message: %s\n", buf);
 
@@ -147,6 +174,7 @@ int main(int argc, char *argv[])
 
         p = parse_message(buf); //parse the new message and return it to p
         //buf = calloc(BUFFER_SIZE, sizeof(char));          //reset the buffer to send new messages
+        srand(time(NULL));
         int *diceRoll = roll_dice();
 
         /*
@@ -159,89 +187,32 @@ int main(int argc, char *argv[])
         case INIT:
             exit(EXIT_FAILURE); //Here, the client sends another INIT message--not expected so exit()
         case EVEN:
-            if (check(diceRoll, p.flag, 0))
-            {
-                sprintf(buf, "%d,PASS\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0)
-                {
-                    fprintf(stderr, "PASS messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else
-            {
+            if(check(diceRoll, p.flag, 0)) {
+                message_pass(client_fd);
+            } else {
+                message_fail(client_fd);
                 numLives--;
-                sprintf(buf, "%d,FAIL\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0)
-                {
-                    fprintf(stderr, "FAIL messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
             }
         case ODD:
-            if (check(diceRoll, p.flag, 0))
-            {
-                sprintf(buf, "%d,PASS\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0)
-                {
-                    fprintf(stderr, "PASS messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else
-            {
+            if(check(diceRoll, p.flag, 0)) {
+                message_pass(client_fd);
+            } else {
+                message_fail(client_fd);
                 numLives--;
-                sprintf(buf, "%d,FAIL\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0)
-                {
-                    fprintf(stderr, "FAIL messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
             }
-
         case DOUB:
-            if (check(diceRoll, p.flag, 0))
-            {
-                sprintf(buf, "%d,PASS\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0)
-                {
-                    fprintf(stderr, "PASS messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else
-            {
+            if(check(diceRoll, p.flag, 0)) {
+                message_pass(client_fd);
+            } else {
+                message_fail(client_fd);
                 numLives--;
-                sprintf(buf, "%d,FAIL\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0)
-                {
-                    fprintf(stderr, "FAIL messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
             }
         case CON:
             if (check(diceRoll, p.flag, p.conChoice)) {
-                sprintf(buf, "%d,PASS\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0) {
-                    fprintf(stderr, "PASS messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else {
+                message_pass(client_fd);
+            } else {
+                message_fail(client_fd);
                 numLives--;
-                sprintf(buf, "%d,FAIL\n", playerCode);
-                err = send(client_fd, buf, strlen(buf), 0);
-                if (err < 0){
-                    fprintf(stderr, "FAIL messaged failed to send\n");
-                    exit(EXIT_FAILURE);
-                }
             }
         default:
             break; //Exit if our parse message hasn't turned up the right flag.
