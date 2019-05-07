@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     **/
 
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
-    sleep(2);
+    //sleep(2);
     int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client
 
     if (read < 0)
@@ -120,6 +120,8 @@ int main(int argc, char *argv[])
     sprintf(buf, "Let the games begin!\n");
     err = send(client_fd, buf, strlen(buf), 0);
 
+    srand(time(0));
+
     while (true)
     {
         if (numLives < 1)
@@ -134,7 +136,7 @@ int main(int argc, char *argv[])
             exit(EXIT_SUCCESS);
         }
 
-        //sleep(1); //Wait 3 seconds
+        sleep(1); //Wait 3 seconds
         memset(buf,0,BUFFER_SIZE);
         read = recv(client_fd, buf, BUFFER_SIZE, 0); // See if we have a response
         printf("Client's Message: %s\n", buf);
