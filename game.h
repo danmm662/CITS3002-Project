@@ -17,13 +17,14 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <sys/time.h>
+#include <netinet/in.h> 
 #include <unistd.h>
 #include <time.h>
 
 //Global variables/data structures
 #define BUFFER_SIZE 1024
-//#define numLives    5         If you #DEFINE this, then you are not able to change it.
+//#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
 
 extern int numLives;

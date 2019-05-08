@@ -7,7 +7,6 @@
 //typedef enum {INIT, EVEN, ODD, DOUB, CON} flag; 
 
 int * roll_dice() {
-    srand(time(NULL));
     sleep(1);
     int max = 6;
     int* dice = calloc(2, sizeof(int));
@@ -52,7 +51,8 @@ bool check(int * dice, int flag, int con_choice) {
         case CON :
             return check_contains(dice, con_choice);
         default :
-            return true; //maybe exit(failure)
+            printf("Get fucked");
+            exit(EXIT_FAILURE);
     }
 }
 
