@@ -1,6 +1,6 @@
 #include "game.h"
 
-int numLives = 10;
+int numLives = 3;
 
 
 /**
