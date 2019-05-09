@@ -1,6 +1,9 @@
 #include "game.h"
 
 int numLives = 3;
+int currPlayers = 0;
+int idCode[900];
+int playerInfo[10][2];
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -20,7 +23,7 @@ void message_pass(int client) {
     //Set up buffer to send string
     char * messbuf;
     messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,PASS\n", playerCode);
+    sprintf(messbuf, "%d,PASS", playerCode);
     int err = send(client, messbuf, strlen(messbuf), 0);
     //Check to see if message was sent
     if(err < 0) {
@@ -34,7 +37,7 @@ void message_fail(int client) {
     //Set up buffer to send string
     char * messbuf;
     messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,FAIL\n", playerCode);
+    sprintf(messbuf, "%d,FAIL", playerCode);
     int err = send(client, messbuf, strlen(messbuf), 0);
     //Check to see if message was sent
     if(err < 0) {
@@ -48,7 +51,7 @@ void message_welcome(int client) {
     //Set up buffer to send string
     char * messbuf;
     messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,WELCOME\n", playerCode);
+    sprintf(messbuf, "%d,WELCOME", playerCode);
     int err = send(client, messbuf, strlen(messbuf), 0);
     //Check to see if message was sent
     if(err < 0) {
@@ -62,7 +65,7 @@ void message_elim(int client) {
     //Set up buffer to send string
     char * messbuf;
     messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,ELIM\n", playerCode);
+    sprintf(messbuf, "%d,ELIM", playerCode);
     int err = send(client, messbuf, strlen(messbuf), 0);
     //Check to see if message was sent
     if(err < 0) {
@@ -117,7 +120,8 @@ void handleClient(int client_fd){
         {
             printf("Client lost all lives, eliminated\n");
             message_elim(client_fd);
-            close(client_fd);        
+            close(client_fd); 
+            currPlayers--;       
             exit(EXIT_SUCCESS);
         }
 
@@ -207,7 +211,6 @@ int main(int argc, char *argv[])
 
     int server_fd, client_fd, opt_val, err, pid;
     struct sockaddr_in server, client;
-    //char *buf;
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -249,13 +252,28 @@ int main(int argc, char *argv[])
     printf("Server is listening on %d\n", port);
 
     socklen_t client_len = sizeof(client);
+    char *buf;
+    buf = calloc(BUFFER_SIZE, sizeof(char));
 
-    while (true) {
+    while (true) {  //Loop for accepting multiple clients
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
+        
+        if(currPlayers < maxPlayers){     //This checks whether game is full or not, 
+            currPlayers++;                //if full it rejects the client attempting to join
+        }
+        else {            
+            sprintf(buf, "REJECT");
+            int err = send(client_fd, buf, strlen(buf), 0);
+            if(err < 0) {
+                fprintf(stderr, "REJECT message failed to send"); //Doesn't really matter as it will be closed anyway
+            }
+            close(client_fd);
+            continue;
+        }
 
         if (client_fd < 0)
         {
-            fprintf(stderr, "Could not establish new connection\n");
+            fprintf(stderr, "Could not establish connection with new client\n");
             exit(EXIT_FAILURE);
         }
 
@@ -274,7 +292,5 @@ int main(int argc, char *argv[])
             default:                    //Parent process
                 close(client_fd);
         }
-    }
-
-   
+    }   
 }

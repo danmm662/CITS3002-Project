@@ -56,9 +56,8 @@ bool check(int * dice, int flag, int con_choice) {
     }
 }
 
-/*Commented out so the program will compile
+//Commented out so the program will compile
 void init_game_data(void) {
-    int playerInfo[10][2];
     for(int i = 0; i < 10; i++) {
         playerInfo[i][0] = 0;
         playerInfo[i][1] = 0;
@@ -70,4 +69,4 @@ void clear_game_info(void) {
         playerInfo[i][0] = 0;
         playerInfo[i][1] = 0;
     }
-}*/
+}

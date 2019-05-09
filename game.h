@@ -29,10 +29,11 @@
 //#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
 #define timeout     30
+#define maxPlayers  2
 
-extern int numLives;
+extern int numLives, currPlayers;
 extern int **playerInfo;
-//extern int idCode[900] idCode; //May not have to use this at all...
+extern int idCode[]; //May not have to use this at all...
 extern enum {INIT, EVEN, ODD, DOUB, CON, ERR}  flag;
 
 extern struct messageProperties {
