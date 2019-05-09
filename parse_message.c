@@ -34,14 +34,14 @@ struct messageProperties parse_message(char *s){
 
 		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf1, "MOV") != 0){
-			//tell client that message is invalid, must have MOV after id
+		if(strcmp(buf1, "MOV") != 0){			
+			return properties;
 		}
 
 		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move the client used?
-			properties.flag = EVEN;
+		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings,
+			properties.flag = EVEN;			//maybe another way to check what move the client used?
 		}
 		else if(strcmp(buf1, "ODD") != 0){
 			properties.flag = ODD;

@@ -1,7 +1,6 @@
 #include "game.h"
 
 int numLives = 3;
-int timeout = 5;
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -73,83 +72,9 @@ void message_elim(int client) {
     free(messbuf);
 }
 
-int main(int argc, char *argv[])
-{
-    if (argc < 2)
-    {
-        fprintf(stderr, "Usage: %s [port]\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
-    int port = atoi(argv[1]);
-
-    int server_fd, client_fd, err, opt_val;
-    struct sockaddr_in server, client;
+void handleClient(int client_fd){
     char *buf;
-
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (server_fd < 0)
-    {
-        fprintf(stderr, "Could not create socket\n");
-        exit(EXIT_FAILURE);
-    }
-
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    opt_val = 1;
-
-    struct timeval tv;
-    //Set the timeout value to 30 seconds
-    tv.tv_sec = timeout;
-    tv.tv_usec = 0;
-    setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
-
-
-    err = bind(server_fd, (struct sockaddr *)&server, sizeof(server));
-    if (err < 0)
-    {
-        fprintf(stderr, "Could not bind socket\n");
-        exit(EXIT_FAILURE);
-    }
-
-    err = listen(server_fd, 128);
-    if (err < 0)
-    {
-        fprintf(stderr, "Could not listen on socket\n");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Server is listening on %d\n", port);
-
-    socklen_t client_len = sizeof(client);
-    // Will block until a connection is made
-    client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
-
-    if (client_fd < 0)
-    {
-        fprintf(stderr, "Could not establish new connection\n");
-        exit(EXIT_FAILURE);
-    }
-
-
-    /*       
-    setup_game/teardown_game() {} : 
-    * this will set up the initial state of the game (number of rounds, players
-        etc.)/ print out final game results and cancel socket connections. 
-            
-    Accepting multiple connections (we recommend not starting this until after implementing some
-    of the basic message parsing/game playing): 
-    * Whilst in a while loop
-        - Accept a new connection 
-        - Create a child process 
-        - In the child process (which is associated with client), perform game_playing functionality
-        (or read the messages) 
-    **/
-
+    int err;
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
     int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client, expecting INIT
 
@@ -178,10 +103,14 @@ int main(int argc, char *argv[])
     memset(buf, 0, BUFFER_SIZE);
     sprintf(buf, "Let the games begin!\n");
     err = send(client_fd, buf, strlen(buf), 0);
+    if(err < 0) {
+        fprintf(stderr, "Failed to send beginning message");
+        exit(EXIT_FAILURE);
+    }
 
     srand(time(NULL));
 
-    while (true)
+    while(true)
     {   
         //sleep(1);
         if (numLives < 1)
@@ -213,8 +142,10 @@ int main(int argc, char *argv[])
 
         /*
             * At the moment, there is a lot of duplicated code in this switch statement... 
-            * This is probably not a good sign, but I was told to keep all the send() and read() statements in here
-            * ... rather than sending them out to another function. We could probably create a function to send the PASS/FAIL messages
+            * This is probably not a good sign, 
+            * but I was told to keep all the send() and read() statements in here
+            * ... rather than sending them out to another function. 
+            * We could probably create a function to send the PASS/FAIL messages
             */
         switch (p.flag)
         {
@@ -256,9 +187,94 @@ int main(int argc, char *argv[])
                 numLives--;
             }
             break;
-        default:
-            break; //Exit if our parse message hasn't turned up the right flag.
+        case ERR:
+            printf("Invalid move, client loses a life\n");
+            numLives--;
+            break;
         }
-        //free(buf);
     }
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 2)
+    {
+        fprintf(stderr, "Usage: %s [port]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    int port = atoi(argv[1]);
+
+    int server_fd, client_fd, opt_val, err, pid;
+    struct sockaddr_in server, client;
+    //char *buf;
+
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (server_fd < 0)
+    {
+        fprintf(stderr, "Could not create socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    opt_val = 1;
+
+    struct timeval tv;
+    //Set the timeout value to 30 seconds
+    tv.tv_sec = timeout;
+    tv.tv_usec = 0;
+    setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+    
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
+
+
+    err = bind(server_fd, (struct sockaddr *)&server, sizeof(server));
+    if (err < 0)
+    {
+        fprintf(stderr, "Could not bind socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = listen(server_fd, 128);
+    if (err < 0)
+    {
+        fprintf(stderr, "Could not listen on socket\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Server is listening on %d\n", port);
+
+    socklen_t client_len = sizeof(client);
+
+    while (true) {
+        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
+
+        if (client_fd < 0)
+        {
+            fprintf(stderr, "Could not establish new connection\n");
+            exit(EXIT_FAILURE);
+        }
+
+        pid = fork();
+
+        switch(pid) {
+
+            case -1 :                   //Failure to fork
+                perror("Fork error");
+                exit(EXIT_FAILURE);
+                break;            
+            case 0:                     //Client process
+                close(server_fd);
+                handleClient(client_fd);
+                exit(EXIT_SUCCESS);            
+            default:                    //Parent process
+                close(client_fd);
+        }
+    }
+
+   
 }

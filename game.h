@@ -28,6 +28,7 @@
 #define BUFFER_SIZE 1024
 //#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
+#define timeout     30
 
 extern int numLives;
 extern int **playerInfo;
