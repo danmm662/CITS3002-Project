@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
+#include <errno.h>
 
 //Global variables/data structures
 #define BUFFER_SIZE 1024

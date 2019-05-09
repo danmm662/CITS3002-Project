@@ -1,11 +1,7 @@
 #include "game.h"
 
-<<<<<<< HEAD
-int numLives = 5;
-=======
-int numLives = 10;
-int timeout = 3;
->>>>>>> dc1fa2e5dfda78560fea1ccfef2c0c47090ea335
+int numLives = 3;
+int timeout = 5;
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -107,7 +103,7 @@ int main(int argc, char *argv[])
 
     struct timeval tv;
     //Set the timeout value to 30 seconds
-    tv.tv_sec = 30;
+    tv.tv_sec = timeout;
     tv.tv_usec = 0;
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
@@ -139,6 +135,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+
     /*       
     setup_game/teardown_game() {} : 
     * this will set up the initial state of the game (number of rounds, players
@@ -154,15 +151,18 @@ int main(int argc, char *argv[])
     **/
 
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
-    sleep(timeout);
-    int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client
+    int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client, expecting INIT
 
-    if (read == 0)
-    {
+    if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
+        fprintf(stderr, "Client timed out\n");
+        exit(EXIT_FAILURE);
+    }
+    else if (read <= 0){
         fprintf(stderr, "Client read failed\n");
         message_elim(client_fd);
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
+
     printf("Client's message: %s\n", buf);
 
     struct messageProperties p;
@@ -186,20 +186,27 @@ int main(int argc, char *argv[])
         //sleep(1);
         if (numLives < 1)
         {
-            message_elim(client_fd);        
+            printf("Client lost all lives, eliminated\n");
+            message_elim(client_fd);
+            close(client_fd);        
             exit(EXIT_SUCCESS);
         }
 
         //sleep(1); //Wait 3 seconds
         memset(buf, 0, BUFFER_SIZE);
         read = recv(client_fd, buf, BUFFER_SIZE, 0); // See if we have a response
-        printf("Client's Message: %s\n", buf);
-
-        if (read < 0)
-        {
+        
+        if (read <= 0 && errno == EAGAIN) {                  //Timeout for client messages, if read fails then client
+            printf("Client took too long, lost a life\n");  //client loses a life and starts loop again
+            numLives--;
+            continue;
+        }
+        else if (read <= 0) {
             fprintf(stderr, "Client read failed\n");
             exit(EXIT_FAILURE);
         }
+
+        printf("Client's Message: %s\n", buf);
 
         p = parse_message(buf); //parse the new message and return it to p
         int *diceRoll = roll_dice();
