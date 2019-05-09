@@ -2,8 +2,7 @@
 
 int numLives = 3;
 int currPlayers = 0;
-int idCode[900];
-int playerInfo[10][2];
+int playerInfo[MAX_PLAYERS][2];
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -75,6 +74,25 @@ void message_elim(int client) {
     free(messbuf);
 }
 
+
+//Provides an id for a client that isn't taken
+int generateNewId(void){
+    int id;
+    for(int i = 0; i < MAX_PLAYERS; i++){
+        if(!playerInfo[i][1]){
+            continue;
+        }
+        else{
+            id = playerInfo[i][0];
+            break;
+        }
+    }
+    return id;
+}
+
+
+//Does all the client handling, atm only allows multiple people to play a single player game on same server
+//Would probably be good to 
 void handleClient(int client_fd){
     char *buf;
     int err;
@@ -91,13 +109,14 @@ void handleClient(int client_fd){
         exit(EXIT_FAILURE);
     }
 
-    printf("Client's message: %s\n", buf);
+    printf("New client's message: %s\n", buf);
 
     struct messageProperties p;
     p = parse_message(buf);
 
     if(p.flag == INIT) {
-        message_welcome(client_fd);
+        //int id = generateNewId();   //If client sends INIT, give them an id and send it to them
+        message_welcome(client_fd);   //Need to pass id to the message() function, ie message(int flag, int id)
     } else {
         fprintf(stderr, "INIT was not the first message received\n");
         exit(EXIT_FAILURE);
@@ -110,8 +129,6 @@ void handleClient(int client_fd){
         fprintf(stderr, "Failed to send beginning message");
         exit(EXIT_FAILURE);
     }
-
-    srand(time(NULL));
 
     while(true)
     {   
@@ -228,7 +245,7 @@ int main(int argc, char *argv[])
 
     struct timeval tv;
     //Set the timeout value to 30 seconds
-    tv.tv_sec = timeout;
+    tv.tv_sec = TIMEOUT;
     tv.tv_usec = 0;
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
     
@@ -249,16 +266,21 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    init_game_data();
+
     printf("Server is listening on %d\n", port);
 
     socklen_t client_len = sizeof(client);
+    
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char));
+
+    srand(time(NULL));      //Outside of any loop
 
     while (true) {  //Loop for accepting multiple clients
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
         
-        if(currPlayers < maxPlayers){     //This checks whether game is full or not, 
+        if(currPlayers < MAX_PLAYERS){     //This checks whether game is full or not, 
             currPlayers++;                //if full it rejects the client attempting to join
         }
         else {            
@@ -284,11 +306,13 @@ int main(int argc, char *argv[])
             case -1 :                   //Failure to fork
                 perror("Fork error");
                 exit(EXIT_FAILURE);
-                break;            
+                break;
+
             case 0:                     //Client process
                 close(server_fd);
                 handleClient(client_fd);
                 exit(EXIT_SUCCESS);            
+
             default:                    //Parent process
                 close(client_fd);
         }

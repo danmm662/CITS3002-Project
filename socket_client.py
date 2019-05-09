@@ -64,7 +64,7 @@ try:
                     sock.sendall(message)
                     print('sending,"%s"' % message)
                 elif "REJECT" in mess:
-                    print("Server is full, ")
+                    print("Server is full, try again later")
                     break
                 else:
                     print ( 'received "%s"' % mess)

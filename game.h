@@ -28,13 +28,14 @@
 #define BUFFER_SIZE 1024
 //#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
-#define timeout     30
-#define maxPlayers  2
+#define TIMEOUT     30
+#define MAX_PLAYERS  2
 
 extern int numLives, currPlayers;
-extern int **playerInfo;
-extern int idCode[]; //May not have to use this at all...
-extern enum {INIT, EVEN, ODD, DOUB, CON, ERR}  flag;
+extern int playerInfo[][2];
+//extern int idCode[900]; //May not have to use this at all...
+extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
+}  flag;
 
 extern struct messageProperties {
     int id; 
