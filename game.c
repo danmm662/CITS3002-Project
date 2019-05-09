@@ -1,6 +1,11 @@
 #include "game.h"
 
+<<<<<<< HEAD
 int numLives = 5;
+=======
+int numLives = 10;
+int timeout = 3;
+>>>>>>> dc1fa2e5dfda78560fea1ccfef2c0c47090ea335
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -99,12 +104,14 @@ int main(int argc, char *argv[])
     server.sin_addr.s_addr = htonl(INADDR_ANY);
 
     opt_val = 1;
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
 
     struct timeval tv;
-    tv.tv_sec = 5;
+    //Set the timeout value to 30 seconds
+    tv.tv_sec = 30;
     tv.tv_usec = 0;
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
+
 
     err = bind(server_fd, (struct sockaddr *)&server, sizeof(server));
     if (err < 0)
@@ -147,13 +154,14 @@ int main(int argc, char *argv[])
     **/
 
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
-    //sleep(2);
+    sleep(timeout);
     int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client
 
-    if (read < 0)
+    if (read == 0)
     {
         fprintf(stderr, "Client read failed\n");
-        exit(EXIT_FAILURE);
+        message_elim(client_fd);
+        //exit(EXIT_FAILURE);
     }
     printf("Client's message: %s\n", buf);
 
@@ -172,9 +180,10 @@ int main(int argc, char *argv[])
     err = send(client_fd, buf, strlen(buf), 0);
 
     srand(time(NULL));
-    
+
     while (true)
-    {
+    {   
+        //sleep(1);
         if (numLives < 1)
         {
             message_elim(client_fd);        
@@ -209,6 +218,7 @@ int main(int argc, char *argv[])
                 message_pass(client_fd);
             } else {
                 message_fail(client_fd);
+                printf("Lost one life\n");
                 numLives--;
             }
             break;
@@ -217,6 +227,7 @@ int main(int argc, char *argv[])
                 message_pass(client_fd);
             } else {
                 message_fail(client_fd);
+                printf("Lost one life\n");
                 numLives--;
             }
             break;
@@ -225,6 +236,7 @@ int main(int argc, char *argv[])
                 message_pass(client_fd);
             } else {
                 message_fail(client_fd);
+                printf("Lost one life\n");
                 numLives--;
             }
             break;
@@ -233,6 +245,7 @@ int main(int argc, char *argv[])
                 message_pass(client_fd);
             } else {
                 message_fail(client_fd);
+                printf("Lost one life\n");
                 numLives--;
             }
             break;
