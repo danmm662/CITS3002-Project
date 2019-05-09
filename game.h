@@ -20,6 +20,7 @@
 #include <netinet/in.h> 
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 
 //Global variables/data structures
 #define BUFFER_SIZE 1024

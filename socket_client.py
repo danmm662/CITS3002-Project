@@ -66,6 +66,7 @@ try:
                     print ( 'received "%s"' % mess)
             
                 data = None
+               #sleep(2)
 
 finally:    
     print ('closing socket')

@@ -1,6 +1,6 @@
 #include "game.h"
 
-int numLives = 10;
+int numLives = 5;
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -100,6 +100,11 @@ int main(int argc, char *argv[])
 
     opt_val = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
+
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
     err = bind(server_fd, (struct sockaddr *)&server, sizeof(server));
     if (err < 0)
@@ -206,6 +211,7 @@ int main(int argc, char *argv[])
                 message_fail(client_fd);
                 numLives--;
             }
+            break;
         case ODD:
             if(check(diceRoll, p.flag, 0)) {
                 message_pass(client_fd);
@@ -213,6 +219,7 @@ int main(int argc, char *argv[])
                 message_fail(client_fd);
                 numLives--;
             }
+            break;
         case DOUB:
             if(check(diceRoll, p.flag, 0)) {
                 message_pass(client_fd);
@@ -220,6 +227,7 @@ int main(int argc, char *argv[])
                 message_fail(client_fd);
                 numLives--;
             }
+            break;
         case CON:
             if (check(diceRoll, p.flag, p.conChoice)) {
                 message_pass(client_fd);
@@ -227,6 +235,7 @@ int main(int argc, char *argv[])
                 message_fail(client_fd);
                 numLives--;
             }
+            break;
         default:
             break; //Exit if our parse message hasn't turned up the right flag.
         }
