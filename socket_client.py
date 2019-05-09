@@ -39,7 +39,7 @@ try:
         #amount_expected = len(message)
         
         while True: #amount_received < amount_expected:
-            sleep(4)
+            sleep(1)
             data = sock.recv(4096)
             # #amount_received += len(data)
             if(data != None):
@@ -72,5 +72,5 @@ try:
             data = None
 
 finally:    
-    print ('closing socket')
+    print ('Closing socket')
     sock.close()

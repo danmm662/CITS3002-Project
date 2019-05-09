@@ -92,8 +92,9 @@ int generateNewId(void){
 
 
 //Does all the client handling, atm only allows multiple people to play a single player game on same server
-//Would probably be good to 
+//Would probably be good to move parts of it to other functions
 void handleClient(int client_fd){
+    int nLives = numLives;
     char *buf;
     int err;
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
@@ -117,7 +118,8 @@ void handleClient(int client_fd){
     if(p.flag == INIT) {
         //int id = generateNewId();   //If client sends INIT, give them an id and send it to them
         message_welcome(client_fd);   //Need to pass id to the message() function, ie message(int flag, int id)
-    } else {
+    } 
+    else {
         fprintf(stderr, "INIT was not the first message received\n");
         exit(EXIT_FAILURE);
     }
@@ -132,8 +134,7 @@ void handleClient(int client_fd){
 
     while(true)
     {   
-        //sleep(1);
-        if (numLives < 1)
+        if (nLives < 1)
         {
             printf("Client lost all lives, eliminated\n");
             message_elim(client_fd);
@@ -142,13 +143,12 @@ void handleClient(int client_fd){
             exit(EXIT_SUCCESS);
         }
 
-        //sleep(1); //Wait 3 seconds
         memset(buf, 0, BUFFER_SIZE);
         read = recv(client_fd, buf, BUFFER_SIZE, 0); // See if we have a response
         
-        if (read <= 0 && errno == EAGAIN) {                  //Timeout for client messages, if read fails then client
-            printf("Client took too long, lost a life\n");  //client loses a life and starts loop again
-            numLives--;
+        if (read <= 0 && errno == EAGAIN) {                  //Timeout for client messages, if read fails
+            printf("Client took too long, lost a life\n");   //client loses a life and starts loop again
+            nLives--;
             continue;
         }
         else if (read <= 0) {
@@ -178,7 +178,7 @@ void handleClient(int client_fd){
             } else {
                 message_fail(client_fd);
                 printf("Lost one life\n");
-                numLives--;
+                nLives--;
             }
             break;
         case ODD:
@@ -187,7 +187,7 @@ void handleClient(int client_fd){
             } else {
                 message_fail(client_fd);
                 printf("Lost one life\n");
-                numLives--;
+                nLives--;
             }
             break;
         case DOUB:
@@ -196,7 +196,7 @@ void handleClient(int client_fd){
             } else {
                 message_fail(client_fd);
                 printf("Lost one life\n");
-                numLives--;
+                nLives--;
             }
             break;
         case CON:
@@ -205,12 +205,12 @@ void handleClient(int client_fd){
             } else {
                 message_fail(client_fd);
                 printf("Lost one life\n");
-                numLives--;
+                nLives--;
             }
             break;
         case ERR:
             printf("Invalid move, client loses a life\n");
-            numLives--;
+            nLives--;
             break;
         }
     }
@@ -280,16 +280,17 @@ int main(int argc, char *argv[])
     while (true) {  //Loop for accepting multiple clients
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
         
-        if(currPlayers < MAX_PLAYERS){     //This checks whether game is full or not, 
-            currPlayers++;                //if full it rejects the client attempting to join
-        }
-        else {            
-            sprintf(buf, "REJECT");
+        currPlayers++;
+
+        if(currPlayers > MAX_PLAYERS){            //This checks whether game is full or not, 
+            sprintf(buf, "REJECT");               //if full it rejects the client attempting to join
             int err = send(client_fd, buf, strlen(buf), 0);
             if(err < 0) {
-                fprintf(stderr, "REJECT message failed to send"); //Doesn't really matter as it will be closed anyway
+                fprintf(stderr, "REJECT message failed to send\n"); //Doesn't really matter as it will be closed anyway
             }
+            printf("Another player attempted to join, was rejected\n");
             close(client_fd);
+            currPlayers--;
             continue;
         }
 
@@ -303,7 +304,7 @@ int main(int argc, char *argv[])
 
         switch(pid) {
 
-            case -1 :                   //Failure to fork
+            case -1:                   //Failure to fork
                 perror("Fork error");
                 exit(EXIT_FAILURE);
                 break;

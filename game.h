@@ -34,7 +34,8 @@
 extern int numLives, currPlayers;
 extern int playerInfo[][2];
 //extern int idCode[900]; //May not have to use this at all...
-extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
+extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, 
+             PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
 }  flag;
 
 extern struct messageProperties {
