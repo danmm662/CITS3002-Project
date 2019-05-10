@@ -26,22 +26,22 @@ struct messageProperties parse_message(char *s){
 		id = atoi(buf1);
 
 		//Check if id provided is a valid id or not, tell client if it isn't
-		/*if(!isValidId(id)){
-			tell client their id is invalid
-		}*/
+		if(!playerInfo[id - 100][1]){
+			
+		}
 		
 		properties.id = id;
 
 		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf1, "MOV") != 0){
-			//tell client that message is invalid, must have MOV after id
+		if(strcmp(buf1, "MOV") != 0){			
+			return properties;
 		}
 
 		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings, maybe another way to check what move the client used?
-			properties.flag = EVEN;
+		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings,
+			properties.flag = EVEN;			//maybe another way to check what move the client used?
 		}
 		else if(strcmp(buf1, "ODD") != 0){
 			properties.flag = ODD;

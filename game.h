@@ -21,16 +21,21 @@
 #include <netinet/in.h> 
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
+#include <errno.h>
 
 //Global variables/data structures
 #define BUFFER_SIZE 1024
 //#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
+#define TIMEOUT     30
+#define MAX_PLAYERS  2
 
-extern int numLives;
-extern int **playerInfo;
-//extern int idCode[900] idCode; //May not have to use this at all...
-extern enum {INIT, EVEN, ODD, DOUB, CON, ERR}  flag;
+extern int numLives, currPlayers;
+extern int playerInfo[][2];
+//extern int idCode[900]; //May not have to use this at all...
+extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
+}  flag;
 
 extern struct messageProperties {
     int id; 
