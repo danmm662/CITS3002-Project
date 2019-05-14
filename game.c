@@ -20,6 +20,7 @@ int playerInfo[MAX_PLAYERS][4];
  *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
  */
 
+<<<<<<< HEAD
 /*
  * This is currently a big function, with lots of things in it
  * It needs to be broken down... and I am doing it with smaller functions, but keeping this big one here
@@ -153,6 +154,80 @@ void handleClient(int client_fd){
         
     // }
 }
+=======
+void message_pass(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,PASS", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "PASS message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}    
+
+void message_fail(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,FAIL", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "FAIL message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
+
+void message_welcome(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,WELCOME", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "WELCOME message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
+
+void message_elim(int client) {
+    //Set up buffer to send string
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "%d,ELIM", playerCode);
+    int err = send(client, messbuf, strlen(messbuf), 0);
+    //Check to see if message was sent
+    if(err < 0) {
+        fprintf(stderr, "ELIM message failed to send");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
+
+
+//Provides an id for a client that isn't taken
+int generateNewId(void){
+    int id;
+    for(int i = 0; i < MAX_PLAYERS; i++){
+        if(!playerInfo[i][1]){
+            continue;
+        }
+        else{
+            id = playerInfo[i][0];
+            break;
+        }
+    }
+    return id;
+}
+
+>>>>>>> c4c02b64bbf2ef337800463542314c73521001c0
 
 int main(int argc, char *argv[])
 {
@@ -222,6 +297,22 @@ int main(int argc, char *argv[])
     while (time() - start < 30) {  //Loop for accepting multiple clients
 
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
+<<<<<<< HEAD
+=======
+        
+        if(currPlayers < MAX_PLAYERS){     //This checks whether game is full or not, 
+            currPlayers++;                //if full it rejects the client attempting to join
+        }
+        else {            
+            sprintf(buf, "REJECT");
+            int err = send(client_fd, buf, strlen(buf), 0);
+            if(err < 0) {
+                fprintf(stderr, "REJECT message failed to send\n"); //Doesn't really matter as it will be closed anyway
+            }
+            close(client_fd);
+            continue;
+        }
+>>>>>>> c4c02b64bbf2ef337800463542314c73521001c0
 
         if (client_fd < 0)
         {

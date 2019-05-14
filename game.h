@@ -56,7 +56,7 @@ extern struct playerInfo {
 //Functions from parse_message
 extern struct messageProperties parse_message(char *);
 
-//Functions from play_game_round
+//Functions from play_game_round.c
 extern int*                     roll_dice(void);
 extern bool                     check_even(int *);
 extern bool                     check_odd(int *);
