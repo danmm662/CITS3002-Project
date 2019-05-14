@@ -1,7 +1,8 @@
 #include "game.h"
 
-int numLives = 3;
 int currPlayers = 0;
+
+struct playerInfo pArray[MAX_PLAYERS];
 //This specifies all our info for our clients, ie.
 //playerInfo[ID number][client_fd][number of lives][bool: ID number taken]
 //int playerInfo[MAX_PLAYERS][4];
@@ -90,8 +91,8 @@ int main(int argc, char *argv[])
         
         currPlayers++;
 
-        if(currPlayers > MAX_PLAYERS){            //This checks whether game is full or not, 
-            send_message(client_fd, REJ);
+        if(currPlayers > MAX_PLAYERS){            //This checks whether game is full or not
+            send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
             printf("Another player attempted to join, was rejected\n");
             close(client_fd);
             currPlayers--;
@@ -110,8 +111,9 @@ int main(int argc, char *argv[])
                 perror("Fork error\n");
                 exit(EXIT_FAILURE);
             case 0:
+                close(server_fd);
                 handleInit(client_fd);
-                handleClient(client_fd);
+                //handleClient(client_fd);
                 currPlayers++;
                 break;
             default:

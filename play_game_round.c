@@ -2,16 +2,28 @@
 //  Created by Kieren Underwood on 2/5/19.
 //
 
+
+
 #include "game.h"
 
-//typedef enum {INIT, EVEN, ODD, DOUB, CON} flag; 
-void playGame() {
+//Replaced repeated code with for loop
+void init_game_data(void) {
+    
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+        pArray[i].playerID = (i + 100);
+        pArray[i].numLives = MAX_LIVES;
+        pArray[i].taken = false;
+        pArray[i].eliminated = false;
+    }
 
-    int playersLeft = MAX_PLAYERS;
+    (void) pArray;      //This just so the set but unused error doesn't pop up
+}
+
+void playGame(void) {
+
+    //int playersLeft = MAX_PLAYERS; Commented out because compiler is annoying
     bool victorFound = false;
     int elimsSent = 0;
-
-    struct playerInfo pArray[MAX_PLAYERS] = {player1, player2, player3, player4};
 
     while(!victorFound) {
     
@@ -22,7 +34,7 @@ void playGame() {
         
         //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
         //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
-        if(child_pid = fork() == 0) {
+        if((child_pid = fork()) == 0) {
             int player = pArray[i].playerID;
             int client_no = pArray[i].client_fd;
             //Should our play round return a bool here?
@@ -69,14 +81,13 @@ void playRound(int player, int client_no) {
 
     //THEN WE PROCESS IT
     
-    int * diceRoll = roll_dice();
+    //int * diceRoll = roll_dice(); Commented out because compiler is annoying
 
     //DO stuff
 
 }
 
 int * roll_dice() {
-    sleep(1);
     int max = 6;
     int* dice = calloc(2, sizeof(int));
     dice[0] = (rand() % max) + 1;
@@ -120,7 +131,7 @@ bool check(int * dice, int flag, int con_choice) {
         case CON :
             return check_contains(dice, con_choice);
         default :
-            printf("Get fucked");
+            printf("Invalid choice\n");
             exit(EXIT_FAILURE);
     }
 }
@@ -132,32 +143,15 @@ bool check(int * dice, int flag, int con_choice) {
 * playerInfo[0] contains ID number
 * playerInfo[1] contains client_fd
 */
-void init_game_data() {
-    
-    player1.playerID = 100;
-    player1.numLives = numLives;
-    player1.taken = false;
-    player1.eliminated = false;
 
-    player2.playerID = 101;
-    player2.numLives = numLives;
-    player2.taken = false;
-    player2.eliminated = false;
-
-    player3.playerID = 102;
-    player3.numLives = numLives;
-    player3.taken = false;
-    player3.eliminated = false;
-
-    player4.playerID = 103;
-    player4.numLives = numLives;
-    player4.taken = false;
-    player4.eliminated = false;
-}
 
 
 void generateNewPlayer(int client_fd, int currPlayers) {
     
+    pArray[currPlayers].client_fd = client_fd;
+    pArray[currPlayers].taken = true;
+    
+    /*
     switch(currPlayers) {
         case 0:
             player1.client_fd = client_fd;
@@ -176,6 +170,6 @@ void generateNewPlayer(int client_fd, int currPlayers) {
             player4.taken = true;
             break;
         default :
-            fprintf(stderr, "Too many players have been accepted");
-    }
+            fprintf(stderr, "Too many players have been accepted\n");
+    }*/
 }

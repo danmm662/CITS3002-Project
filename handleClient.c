@@ -1,6 +1,6 @@
 #include "game.h"
 
-void handleClient(int client_fd) {
+/*void handleClient(int client_fd) {
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
     int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client, expecting INIT
@@ -22,7 +22,7 @@ void handleClient(int client_fd) {
     p = parse_message(buf);
 
     if(p.flag == INIT) {
-        generateNewPlayer(client_fd, numLives);   //If client sends INIT, give them an id and send it to them
+        generateNewPlayer(client_fd, MAX_LIVES);   //If client sends INIT, give them an id and send it to them
         send_message(client_fd, p.flag);   //Need to pass id to the message() function, ie message(int flag, int id)
     } 
     else {
@@ -42,7 +42,7 @@ void handleClient(int client_fd) {
             exit(EXIT_SUCCESS);
         }
         //sleep(1);
-        if (numLives < 1)
+        if (1)
         {
             printf("Client lost all lives, eliminated\n");
             send_message(client_fd, ELIM);
@@ -125,4 +125,4 @@ void handleClient(int client_fd) {
             break;
         }
     }
-}
+}*/

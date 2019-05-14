@@ -44,8 +44,9 @@ try:
             # #amount_received += len(data)
             if(data != None):
                 mess = data.decode()
-                if "games" in mess:
-                    id = int(mess[:3])
+                print("Received: %s" % mess)
+                if "WELCOME" in mess:
+                    id = int(mess[-3:])
                     print("Our id is %d" % id)
                     message = ('%d,MOV,CON,1' % id).encode()
                     print("The games have begun")
@@ -53,7 +54,6 @@ try:
                     print('sending,"%s"' % message)
                 elif "ELIM" in mess:
                     print("We lost, closing connection")
-                    exit = True
                     break
                 elif "PASS" in mess:
                     print("Your choice was correct")

@@ -23,19 +23,21 @@
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <sys/wait.h>
+
 
 //Global variables/data structures
-#define BUFFER_SIZE 1024
-//#define maxLives    5         If you #DEFINE this, then you are not able to change it.
-#define playerCode  100
-#define TIMEOUT     30
+#define BUFFER_SIZE  1024
+#define MAX_LIVES    3        
+#define TIMEOUT      30
 #define MAX_PLAYERS  4
 
-extern int numLives, currPlayers;
+
+extern int  currPlayers;
 //extern int playerInfo[][5];
 //extern int idCode[900]; //May not have to use this at all...
-extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, 
-             PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
+extern enum {INIT, EVEN, ODD, DOUB, CON, WELCOME, START, 
+             PASS, FAIL, ELIM, VICT, REJECT, CANCEL, ERR
 }  flag;
 
 extern struct messageProperties {
@@ -53,10 +55,9 @@ extern struct playerInfo {
     bool eliminated;
 } playerInfo;
 
-extern struct playerInfo player1;
-extern struct playerInfo player2;
-extern struct playerInfo player3;
-extern struct playerInfo player4;
+//extern struct playerInfo player1, player2, player3, player4;    //Don't think we need this
+extern struct playerInfo pArray[];
+
 
 //Functions from parse_message
 extern struct messageProperties parse_message(char *);
@@ -75,7 +76,7 @@ extern void                     playRound(int, int);
 
 //Functions from messages.c
 extern void                     send_message(int, int);
-extern struct messageProperties handleGuess(void);
+extern struct messageProperties handleGuess(int);
 extern void                     handleInit(int);
 
 //Functions from handleClient.c

@@ -14,7 +14,7 @@ struct messageProperties parse_message(char *s){
 	char *buf1;
 	buf1 = calloc(BUFFER_SIZE, sizeof(char));
 
-	if(strcmp(s, "INIT") == 0){
+	if(strcmp(s, "INIT") == 0) {
 		properties.flag = INIT;
 	}
 	else {  
@@ -26,9 +26,16 @@ struct messageProperties parse_message(char *s){
 		id = atoi(buf1);
 
 		//Check if id provided is a valid id or not, tell client if it isn't
-		/*if(){
-			
-		}*/
+		//Need to change that so it checks that the playerID and the client_fd match as well
+		for(int i = 0; i < MAX_PLAYERS; i++){
+			if(pArray[i].playerID == id) {
+				break;
+			}
+			else if(i == (MAX_PLAYERS - 1)) {	//If id isn't found, exit out
+				fprintf(stderr, "Unable to find client's id\n");
+				exit(EXIT_FAILURE);
+			}
+		}
 		
 		properties.id = id;
 

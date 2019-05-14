@@ -7,41 +7,63 @@
 
 #include "game.h"
 
+
 void send_message(int client_fd, int flag) {
     //Set up buffer to send string
     char * messbuf;
     messbuf = calloc(BUFFER_SIZE, sizeof(char));
 
-    //Search through the clients to find the matching playerCode
-    //Is this the best way to do it?
     int playerID;
+    
+    //New way to search through the player info to find player ID
+    //not sure if best method
+    struct playerInfo p;
+
     for(int i = 0; i < MAX_PLAYERS; i++) {
-        if(playerInfo[i][1] == client_fd && playerInfo[i][4] == false) {
-            playerID = playerInfo[i][0];
+        p = pArray[i];
+        if(p.client_fd == client_fd){
             break;
         }
+        //This is for when there is no record of the client_fd being stored
+        //Don't know if it is worth testing for
+        else if(i == (MAX_PLAYERS - 1)) { 
+            fprintf(stderr,"Unable to find the client's info\n"); 
+            exit(EXIT_FAILURE);
+        }
     }
+
+    playerID = p.playerID;
     
     switch(flag) {
         case PASS :
             sprintf(messbuf, "%d,PASS", playerID);
+            break;
         case FAIL :
             sprintf(messbuf, "%d,FAIL", playerID);
+            break;
         case ELIM :
             sprintf(messbuf, "%d,ELIM", playerID);
-        case WEL :
-            sprintf(messbuf, "%d,WELCOME", playerID);
+            break;
+        case WELCOME :
+            sprintf(messbuf, "WELCOME,%d", playerID);
+            break;
         case VICT :
             sprintf(messbuf, "%d,VICT", playerID);
-        case CAN :
-            sprintf(messbuf, "%d,CAN", playerID);
-        case REJ :
-            sprintf(messbuf, "%d,REJ", playerID);
+            break;
+        case CANCEL :
+            sprintf(messbuf, "CANCEL");
+            break;
+        case REJECT :
+            sprintf(messbuf, "REJECT");
+            break;
+        default:
+            fprintf(stderr, "Invalid message\n");
+            exit(EXIT_FAILURE);
     }  
 
     int err = send(client_fd, messbuf, strlen(messbuf), 0);
     if(err < 0) {
-        fprintf(stderr, "Message failed to send");
+        fprintf(stderr, "Message failed to send\n");
         exit(EXIT_FAILURE);
     }
     free(messbuf);
@@ -51,9 +73,13 @@ void send_message(int client_fd, int flag) {
 * If successful this will @return a struct containing the guess of the player
 * Right now, it DOES NOT handle the case where it sends a message which was corrupt
 */
-struct messageProperties handleGuess(void) {
+//Changed this so it takes an int argument, not sure how it would work
+//just taking void
+struct messageProperties handleGuess(int client_fd) {
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char)); 
+
+    int read = recv(client_fd, buf, BUFFER_SIZE, 0);
 
     if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
         fprintf(stderr, "Client timed out\n");
@@ -84,8 +110,10 @@ void handleInit(int client_fd) {
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char)); 
 
+    int read = recv(client_fd, buf, BUFFER_SIZE, 0);
+
     if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
-        fprintf(stderr, "Client timed out\n");
+        fprintf(stderr, "New client timed out\n");
         exit(EXIT_FAILURE);
     }
     else if (read <= 0){
@@ -101,8 +129,8 @@ void handleInit(int client_fd) {
     p = parse_message(buf);
 
     if(p.flag == INIT) {
-        generateNewPlayer(client_fd, numLives);     //If client sends INIT, give them an id and send it to them
-        send_message(client_fd, WEL);               //Need to pass id to the message() function, ie message(int flag, int id)
+        generateNewPlayer(client_fd, currPlayers);     //If client sends INIT, give them an id and send it to them
+        send_message(client_fd, WELCOME);               //Need to pass id to the message() function, ie message(int flag, int id)
         exit(EXIT_SUCCESS);
     } else {
         fprintf(stderr, "INIT was not the first message received\n");
