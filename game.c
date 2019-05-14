@@ -2,7 +2,9 @@
 
 int numLives = 3;
 int currPlayers = 0;
-int playerInfo[MAX_PLAYERS][2];
+//This specifies all our info for our clients, ie.
+//playerInfo[ID number][client_fd][number of lives][bool: ID number taken]
+int playerInfo[MAX_PLAYERS][4];
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -18,84 +20,12 @@ int playerInfo[MAX_PLAYERS][2];
  *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
  */
 
-void message_pass(int client) {
-    //Set up buffer to send string
-    char * messbuf;
-    messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,PASS", playerCode);
-    int err = send(client, messbuf, strlen(messbuf), 0);
-    //Check to see if message was sent
-    if(err < 0) {
-        fprintf(stderr, "PASS message failed to send");
-        exit(EXIT_FAILURE);
-    }
-    free(messbuf);
-}    
-
-void message_fail(int client) {
-    //Set up buffer to send string
-    char * messbuf;
-    messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,FAIL", playerCode);
-    int err = send(client, messbuf, strlen(messbuf), 0);
-    //Check to see if message was sent
-    if(err < 0) {
-        fprintf(stderr, "FAIL message failed to send");
-        exit(EXIT_FAILURE);
-    }
-    free(messbuf);
-}
-
-void message_welcome(int client) {
-    //Set up buffer to send string
-    char * messbuf;
-    messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,WELCOME", playerCode);
-    int err = send(client, messbuf, strlen(messbuf), 0);
-    //Check to see if message was sent
-    if(err < 0) {
-        fprintf(stderr, "WELCOME message failed to send");
-        exit(EXIT_FAILURE);
-    }
-    free(messbuf);
-}
-
-void message_elim(int client) {
-    //Set up buffer to send string
-    char * messbuf;
-    messbuf = calloc(BUFFER_SIZE, sizeof(char));
-    sprintf(messbuf, "%d,ELIM", playerCode);
-    int err = send(client, messbuf, strlen(messbuf), 0);
-    //Check to see if message was sent
-    if(err < 0) {
-        fprintf(stderr, "ELIM message failed to send");
-        exit(EXIT_FAILURE);
-    }
-    free(messbuf);
-}
-
-
-//Provides an id for a client that isn't taken
-int generateNewId(void){
-    int id;
-    for(int i = 0; i < MAX_PLAYERS; i++){
-        if(!playerInfo[i][1]){
-            continue;
-        }
-        else{
-            id = playerInfo[i][0];
-            break;
-        }
-    }
-    return id;
-}
-
-
-//Does all the client handling, atm only allows multiple people to play a single player game on same server
-//Would probably be good to 
+/*
+ * This is currently a big function, with lots of things in it
+ * It needs to be broken down... and I am doing it with smaller functions, but keeping this big one here
+ */
 void handleClient(int client_fd){
     char *buf;
-    int err;
     buf = calloc(BUFFER_SIZE, sizeof(char)); // Clear our buffer so we don't accidentally send/print garbage
     int read = recv(client_fd, buf, BUFFER_SIZE, 0); // Try to read from the incoming client, expecting INIT
 
@@ -105,7 +35,8 @@ void handleClient(int client_fd){
     }
     else if (read <= 0){
         fprintf(stderr, "Client read failed\n");
-        message_elim(client_fd);
+        //message_elim(client_fd);
+        send_message(client_fd, ELIM);
         exit(EXIT_FAILURE);
     }
 
@@ -115,28 +46,30 @@ void handleClient(int client_fd){
     p = parse_message(buf);
 
     if(p.flag == INIT) {
-        //int id = generateNewId();   //If client sends INIT, give them an id and send it to them
-        message_welcome(client_fd);   //Need to pass id to the message() function, ie message(int flag, int id)
+        generateNewPlayer(client_fd, numLives);   //If client sends INIT, give them an id and send it to them
+        send_message(client_fd, p.flag);   //Need to pass id to the message() function, ie message(int flag, int id)
     } else {
         fprintf(stderr, "INIT was not the first message received\n");
         exit(EXIT_FAILURE);
     }
 
-    memset(buf, 0, BUFFER_SIZE);
-    sprintf(buf, "Let the games begin!\n");
-    err = send(client_fd, buf, strlen(buf), 0);
-    if(err < 0) {
-        fprintf(stderr, "Failed to send beginning message");
-        exit(EXIT_FAILURE);
-    }
+    send_message(client_fd, START);
 
     while(true)
     {   
+        //Should this be checked before or after numLives < 1?
+        if(currPlayers < 2){
+            printf("The winner(s) have been found\n");
+            send_message(client_fd, VICT);
+            close(client_fd);
+            exit(EXIT_SUCCESS);
+        }
         //sleep(1);
         if (numLives < 1)
         {
             printf("Client lost all lives, eliminated\n");
-            message_elim(client_fd);
+            send_message(client_fd, ELIM);
+            //message_elim(client_fd);
             close(client_fd); 
             currPlayers--;       
             exit(EXIT_SUCCESS);
@@ -161,49 +94,50 @@ void handleClient(int client_fd){
         p = parse_message(buf); //parse the new message and return it to p
         int *diceRoll = roll_dice();
 
-        /*
-            * At the moment, there is a lot of duplicated code in this switch statement... 
-            * This is probably not a good sign, 
-            * but I was told to keep all the send() and read() statements in here
-            * ... rather than sending them out to another function. 
-            * We could probably create a function to send the PASS/FAIL messages
-            */
         switch (p.flag)
         {
         case INIT:
             exit(EXIT_FAILURE); //Here, the client sends another INIT message--not expected so exit()
         case EVEN:
             if(check(diceRoll, p.flag, 0)) {
-                message_pass(client_fd);
+                send_message(client_fd, p.flag);
+                //message_pass(client_fd);
             } else {
-                message_fail(client_fd);
+                send_message(client_fd, p.flag);
+                //message_fail(client_fd);
                 printf("Lost one life\n");
                 numLives--;
             }
             break;
         case ODD:
             if(check(diceRoll, p.flag, 0)) {
-                message_pass(client_fd);
+                send_message(client_fd, p.flag);
+                //message_pass(client_fd);
             } else {
-                message_fail(client_fd);
+                send_message(client_fd, p.flag);
+                //message_fail(client_fd);
                 printf("Lost one life\n");
                 numLives--;
             }
             break;
         case DOUB:
             if(check(diceRoll, p.flag, 0)) {
-                message_pass(client_fd);
+                send_message(client_fd, p.flag);
+                //message_pass(client_fd);
             } else {
-                message_fail(client_fd);
+                send_message(client_fd, p.flag);
+                //message_fail(client_fd);
                 printf("Lost one life\n");
                 numLives--;
             }
             break;
         case CON:
             if (check(diceRoll, p.flag, p.conChoice)) {
-                message_pass(client_fd);
+                send_message(client_fd, p.flag);
+                //message_pass(client_fd);
             } else {
-                message_fail(client_fd);
+                send_message(client_fd, p.flag);
+                //message_fail(client_fd);
                 printf("Lost one life\n");
                 numLives--;
             }
@@ -214,6 +148,10 @@ void handleClient(int client_fd){
             break;
         }
     }
+}
+    // while (true) {//Do stuff with fork to stop other clients from joining } //Loop for accepting multiple clients
+        
+    // }
 }
 
 int main(int argc, char *argv[])
@@ -259,14 +197,18 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    srand(time(NULL)); 
+    //WORKIGN ON THIS CURRENTLY
+    init_game_data();
+
+    //Adding this new function to listen
+    //listenForPlayers(server_fd, port);
     err = listen(server_fd, 128);
     if (err < 0)
     {
         fprintf(stderr, "Could not listen on socket\n");
         exit(EXIT_FAILURE);
     }
-
-    init_game_data();
 
     printf("Server is listening on %d\n", port);
 
@@ -275,46 +217,78 @@ int main(int argc, char *argv[])
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char));
 
-    srand(time(NULL));      //Outside of any loop
+    bool gameInSession = false;
+    time_t start = time();
+    while (time() - start < 30) {  //Loop for accepting multiple clients
 
-    while (true) {  //Loop for accepting multiple clients
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
-        
-        if(currPlayers < MAX_PLAYERS){     //This checks whether game is full or not, 
-            currPlayers++;                //if full it rejects the client attempting to join
-        }
-        else {            
-            sprintf(buf, "REJECT");
-            int err = send(client_fd, buf, strlen(buf), 0);
-            if(err < 0) {
-                fprintf(stderr, "REJECT message failed to send"); //Doesn't really matter as it will be closed anyway
-            }
-            close(client_fd);
-            continue;
-        }
 
         if (client_fd < 0)
         {
             fprintf(stderr, "Could not establish connection with new client\n");
+            //exit(EXIT_FAILURE);
+        }
+
+        if(pid = fork() == 0) {
+            //This function automatically calls generateNewPlayer()
+            handleInit(client_fd);
+            currPlayers++;
+        } else {
+            perror("Fork error");
             exit(EXIT_FAILURE);
         }
 
-        pid = fork();
-
-        switch(pid) {
-
-            case -1 :                   //Failure to fork
-                perror("Fork error");
-                exit(EXIT_FAILURE);
-                break;
-
-            case 0:                     //Client process
-                close(server_fd);
-                handleClient(client_fd);
-                exit(EXIT_SUCCESS);            
-
-            default:                    //Parent process
-                close(client_fd);
+        //Set up some shared memory here, so that when you fork() and call generateNewPlayer(), 
+        //the variables that it changes will be changed in the parent process.
+        
+        //playGame() should only ever be called once.
+        if(gameInSession == false && currPlayers == MAX_PLAYERS) {
+            playGame();
+            gameInSession = true;
         }
-    }   
+    }  
+
+    /*
+    * After you call play game you are going to have to deal with other clients who try to 
+    * enter the game. You will have to continue listening in a while(true) loop, and then fork()
+    * the process whenever you catch someone wanting to join. 
+    */
+
+    exit(EXIT_SUCCESS); 
 }
+
+        //SOME LEFTOVER CODE FROM THE FORK(), WHICH WAS IN THE WRONG PLACE
+        // pid = fork();
+
+        // switch(pid) {
+
+        //     case -1 :                   //Failure to fork
+        //         perror("Fork error");
+        //         exit(EXIT_FAILURE);
+        //         break;
+
+        //     case 0:                     //Client process
+        //         close(server_fd);
+        //         handleClient(client_fd);
+        //         exit(EXIT_SUCCESS);            
+
+        //     default:                    //Parent process
+        //         close(client_fd);
+        // }
+
+
+        
+        //SOME LEFTOVER CODE FOR THE REJECT STATEMENT, WHICH WAS IN THE WRONG PLACE
+        // else {
+        //     pid = fork();
+        //     if(pid == 0) {            
+        //     sprintf(buf, "REJECT");
+        //     int err = send(client_fd, buf, strlen(buf), 0);
+        //     if(err < 0) {
+        //         fprintf(stderr, "REJECT message failed to send"); //Doesn't really matter as it will be closed anyway
+        //     }
+        //     close(client_fd);
+        //     exit(EXIT_SUCCESS);
+        //     }
+        //     break;
+        // }

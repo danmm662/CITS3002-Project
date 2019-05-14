@@ -44,7 +44,7 @@ try:
             # #amount_received += len(data)
             if(data != None):
                 mess = data.decode()
-                if "games" in mess:
+                if "START" in mess:
                     message = '100,MOV,CON,1'.encode()
                     print("The games have begun")
                     sock.sendall(message) # Client has ID 100

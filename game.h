@@ -29,10 +29,11 @@
 //#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
 #define TIMEOUT     30
-#define MAX_PLAYERS  2
+#define MAX_PLAYERS  4
 
 extern int numLives, currPlayers;
-extern int playerInfo[][2];
+extern int playerInfo[][5];
+extern struct player1, player2, player3, player4;
 //extern int idCode[900]; //May not have to use this at all...
 extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
 }  flag;
@@ -42,6 +43,15 @@ extern struct messageProperties {
     int flag; 
     int conChoice; 
 } messageProperties;
+
+extern struct playerInfo {
+    int playerID;
+    int client_fd;
+    int numLives;
+    bool taken;
+    bool won_last_round;
+    bool eliminated;
+};
 
 //Functions from parse_message
 extern struct messageProperties parse_message(char *);
@@ -53,5 +63,7 @@ extern bool                     check_odd(int *);
 extern bool                     check_doubles(int *);
 extern bool                     check_contains(int *, int);
 extern bool                     check(int *, int, int);
-extern void                     clear_game_info(void);
 extern void                     init_game_data(void);
+extern void                     generateNewPlayer(int, int);
+extern void                     playGame(void);
+extern void                     playRound(int, int);
