@@ -26,9 +26,9 @@ struct messageProperties parse_message(char *s){
 		id = atoi(buf1);
 
 		//Check if id provided is a valid id or not, tell client if it isn't
-		if(!playerInfo[id - 100][1]){
+		/*if(){
 			
-		}
+		}*/
 		
 		properties.id = id;
 
@@ -61,6 +61,5 @@ struct messageProperties parse_message(char *s){
 			properties.conChoice = num;			
 		}
 	}	
-	//free(buf1);
 	return properties;
 }

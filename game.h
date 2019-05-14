@@ -29,10 +29,10 @@
 //#define maxLives    5         If you #DEFINE this, then you are not able to change it.
 #define playerCode  100
 #define TIMEOUT     30
-#define MAX_PLAYERS  2
+#define MAX_PLAYERS  4
 
 extern int numLives, currPlayers;
-extern int playerInfo[][2];
+//extern int playerInfo[][5];
 //extern int idCode[900]; //May not have to use this at all...
 extern enum {INIT, EVEN, ODD, DOUB, CON, WEL, START, 
              PASS, FAIL, ELIM, VICT, REJ, CAN, ERR
@@ -44,7 +44,21 @@ extern struct messageProperties {
     int conChoice; 
 } messageProperties;
 
-//Functions from parse_message.c
+extern struct playerInfo {
+    int playerID;
+    int client_fd;
+    int numLives;
+    bool taken;
+    bool won_last_round;
+    bool eliminated;
+} playerInfo;
+
+extern struct playerInfo player1;
+extern struct playerInfo player2;
+extern struct playerInfo player3;
+extern struct playerInfo player4;
+
+//Functions from parse_message
 extern struct messageProperties parse_message(char *);
 
 //Functions from play_game_round.c
@@ -54,16 +68,15 @@ extern bool                     check_odd(int *);
 extern bool                     check_doubles(int *);
 extern bool                     check_contains(int *, int);
 extern bool                     check(int *, int, int);
-extern void                     clear_game_info(void);
 extern void                     init_game_data(void);
+extern void                     generateNewPlayer(int, int);
+extern void                     playGame(void);
+extern void                     playRound(int, int);
+
+//Functions from messages.c
+extern void                     send_message(int, int);
+extern struct messageProperties handleGuess(void);
+extern void                     handleInit(int);
 
 //Functions from handleClient.c
 extern void                     handleClient(int);
-
-//Message functions (temporary)
-extern void                     message_pass(int);
-extern void                     message_fail(int);
-extern void                     message_welcome(int);
-extern void                     message_elim(int);
-
-extern int                      generateNewId(void);
