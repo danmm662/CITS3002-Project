@@ -44,10 +44,10 @@ extern struct messageProperties {
     int conChoice; 
 } messageProperties;
 
-//Functions from parse_message
+//Functions from parse_message.c
 extern struct messageProperties parse_message(char *);
 
-//Functions from play_game_round
+//Functions from play_game_round.c
 extern int*                     roll_dice(void);
 extern bool                     check_even(int *);
 extern bool                     check_odd(int *);
@@ -56,3 +56,14 @@ extern bool                     check_contains(int *, int);
 extern bool                     check(int *, int, int);
 extern void                     clear_game_info(void);
 extern void                     init_game_data(void);
+
+//Functions from handleClient.c
+extern void                     handleClient(int);
+
+//Message functions (temporary)
+extern void                     message_pass(int);
+extern void                     message_fail(int);
+extern void                     message_welcome(int);
+extern void                     message_elim(int);
+
+extern int                      generateNewId(void);

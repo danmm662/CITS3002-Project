@@ -39,13 +39,15 @@ try:
         #amount_expected = len(message)
         
         while True: #amount_received < amount_expected:
-            sleep(1)
+            sleep(2)
             data = sock.recv(4096)
             # #amount_received += len(data)
             if(data != None):
                 mess = data.decode()
                 if "games" in mess:
-                    message = '100,MOV,CON,1'.encode()
+                    id = int(mess[:3])
+                    print("Our id is %d" % id)
+                    message = ('%d,MOV,CON,1' % id).encode()
                     print("The games have begun")
                     sock.sendall(message) # Client has ID 100
                     print('sending,"%s"' % message)
@@ -55,12 +57,12 @@ try:
                     break
                 elif "PASS" in mess:
                     print("Your choice was correct")
-                    message = '100,MOV,EVEN'.encode()
+                    message = ('%d,MOV,EVEN' % id).encode()
                     sock.sendall(message) # Client sends EVEN choice
                     print('sending,"%s"' % message)
                 elif "FAIL" in mess:
                     print("Your choice was wrong")
-                    message = '100,MOV,EVEN'.encode()
+                    message = ('%d,MOV,ODD' % id).encode()
                     sock.sendall(message)
                     print('sending,"%s"' % message)
                 elif "REJECT" in mess:
