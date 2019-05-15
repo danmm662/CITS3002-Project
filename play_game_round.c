@@ -15,8 +15,6 @@ void init_game_data(void) {
         pArray[i].taken = false;
         pArray[i].eliminated = false;
     }
-
-    (void) pArray;      //This just so the set but unused error doesn't pop up
 }
 
 void playGame(void) {
@@ -27,50 +25,50 @@ void playGame(void) {
 
     while(!victorFound) {
     
-    pid_t child_pid, wpid;
-    int status = 0;
+        pid_t child_pid, wpid;
+        int status = 0;
 
-    for(int i = 0; i < MAX_PLAYERS; i++) {
-        
-        //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
-        //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
-        if((child_pid = fork()) == 0) {
-            int player = pArray[i].playerID;
-            int client_no = pArray[i].client_fd;
-            //Should our play round return a bool here?
-
-            //THIS PLAY ROUND HAS TO WAIT FOR THE CLIENT TO SEND A MESSAGE FIRST
-            //AND THEN PROCESS THE ROUND... SO MAYBE HAVE A FUNCTION THAT JUST SITS THERE AND WAITS FOR A CLIENT 
-            //TO CHOOSE AN OPTION
-            playRound(player, client_no);
-            exit(EXIT_SUCCESS);
-        }
-    }
-
-    while((wpid = wait(&status)) > 0 );
-
-    //Check to see whether or not the players won the last round
-    for(int i = 0; i < MAX_PLAYERS; i++) {
-        if(!pArray[i].won_last_round) {
-            pArray[i].numLives--;
-        }
-
-        //Then check if they should be eliminated
-        if(pArray[i].numLives < 1) {
-            send_message(pArray[i].client_fd, ELIM);
-            elimsSent++;
-        }
-    }
-    
-    //Check if there is a victor and send victory message if there is one
-    if(elimsSent >= 3) {
-        victorFound = true;
         for(int i = 0; i < MAX_PLAYERS; i++) {
-            if(!pArray[i].eliminated) {
-                send_message(pArray[i].client_fd, VICT);
+            
+            //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
+            //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
+            if((child_pid = fork()) == 0) {
+                int player = pArray[i].playerID;
+                int client_no = pArray[i].client_fd;
+                //Should our play round return a bool here?
+
+                //THIS PLAY ROUND HAS TO WAIT FOR THE CLIENT TO SEND A MESSAGE FIRST
+                //AND THEN PROCESS THE ROUND... SO MAYBE HAVE A FUNCTION THAT JUST SITS THERE AND WAITS FOR A CLIENT 
+                //TO CHOOSE AN OPTION
+                playRound(player, client_no);
+                exit(EXIT_SUCCESS);
             }
         }
-    }
+
+        while((wpid = wait(&status)) > 0 );
+
+        //Check to see whether or not the players won the last round
+        for(int i = 0; i < MAX_PLAYERS; i++) {
+            if(!pArray[i].won_last_round) {
+                pArray[i].numLives--;
+            }
+
+            //Then check if they should be eliminated
+            if(pArray[i].numLives < 1) {
+                send_message(pArray[i].client_fd, ELIM);
+                elimsSent++;
+            }
+        }
+        
+        //Check if there is a victor and send victory message if there is one
+        if(elimsSent >= 3) {
+            victorFound = true;
+            for(int i = 0; i < MAX_PLAYERS; i++) {
+                if(!pArray[i].eliminated) {
+                    send_message(pArray[i].client_fd, VICT);
+                }
+            }
+        }
 
     }
 }
@@ -135,15 +133,6 @@ bool check(int * dice, int flag, int con_choice) {
             exit(EXIT_FAILURE);
     }
 }
-
-/*
-* This function is called at the start of the program
-* It makes 4 ID numbers: 100, 101, 102, 103
-* These can then be attached to our client_fd's
-* playerInfo[0] contains ID number
-* playerInfo[1] contains client_fd
-*/
-
 
 
 void generateNewPlayer(int client_fd, int currPlayers) {

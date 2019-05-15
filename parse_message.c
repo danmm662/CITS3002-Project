@@ -23,7 +23,7 @@ struct messageProperties parse_message(char *s){
 		int id;
 		buf1 = strtok(s, ",");
 
-		id = atoi(buf1);
+		id = atoi(buf1);  //This will crash if buf1 is not an int, may need to test for that first
 
 		//Check if id provided is a valid id or not, tell client if it isn't
 		//Need to change that so it checks that the playerID and the client_fd match as well

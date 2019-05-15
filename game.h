@@ -24,6 +24,7 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
 
 
 //Global variables/data structures
@@ -55,7 +56,7 @@ extern struct playerInfo {
     bool eliminated;
 } playerInfo;
 
-//extern struct playerInfo player1, player2, player3, player4;    //Don't think we need this
+//extern struct playerInfo player1, player2, player3, player4;    Don't think we need this
 extern struct playerInfo pArray[];
 
 

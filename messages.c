@@ -56,6 +56,9 @@ void send_message(int client_fd, int flag) {
         case REJECT :
             sprintf(messbuf, "REJECT");
             break;
+        case START :
+            sprintf(messbuf, "START,%d,%d", MAX_PLAYERS, MAX_LIVES);
+            break;
         default:
             fprintf(stderr, "Invalid message\n");
             exit(EXIT_FAILURE);

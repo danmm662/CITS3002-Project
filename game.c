@@ -113,7 +113,6 @@ int main(int argc, char *argv[])
             case 0:
                 close(server_fd);
                 handleInit(client_fd);
-                //handleClient(client_fd);
                 currPlayers++;
                 break;
             default:
@@ -123,12 +122,11 @@ int main(int argc, char *argv[])
         
                 //playGame() should only ever be called once.
                 if(!gameInSession && currPlayers == MAX_PLAYERS) {
-                    playGame();
                     gameInSession = true;
+                    playGame();
                 }
                 break;
         }
-
         
     }  
 
