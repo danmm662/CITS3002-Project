@@ -129,7 +129,7 @@ bool check(int * dice, int flag, int con_choice) {
         case CON :
             return check_contains(dice, con_choice);
         default :
-            printf("Invalid choice\n");
+            fprintf(stderr, "Invalid choice\n");
             exit(EXIT_FAILURE);
     }
 }

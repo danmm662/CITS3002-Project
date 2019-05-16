@@ -26,7 +26,7 @@ struct messageProperties parse_message(char *s){
 		id = atoi(buf1);  //This will crash if buf1 is not an int, may need to test for that first
 
 		//Check if id provided is a valid id or not, tell client if it isn't
-		//Need to change that so it checks that the playerID and the client_fd match as well
+		//Need to modify this so it checks that the playerID and the client_fd match as well
 		for(int i = 0; i < MAX_PLAYERS; i++){
 			if(pArray[i].playerID == id) {
 				break;
@@ -41,8 +41,8 @@ struct messageProperties parse_message(char *s){
 
 		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf1, "MOV") != 0){			
-			return properties;
+		if(strcmp(buf1, "MOV") != 0){ 	//Checks that message contains MOV, returns the struct with the
+			return properties;			//ERR flag if it doesn't
 		}
 
 		buf1 = strtok(NULL, ",");
@@ -62,8 +62,9 @@ struct messageProperties parse_message(char *s){
 			buf1 = strtok(NULL, ",");
 			int num = atoi(buf1);
 			
-			if(num < 1 || num > 6){
-				//let client know they picked an invalid dice number
+			if(num < 1 || num > 6){		//Returns the properties struct with the ERR flag
+				properties.flag = ERR;
+				return properties;
 			}
 			properties.conChoice = num;			
 		}
