@@ -1,7 +1,7 @@
 # CITS3002 Project 2019
 # Names:            Kieren Underwood,   Daniel Maitland
 # Student Numbers:  21315543            21986102
-#
+# Compiles on Linux
 
 PROJECT = game
 HEADERS = $(PROJECT).h

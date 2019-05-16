@@ -135,7 +135,7 @@ void handleInit(int client_fd) {
     if(p.flag == INIT) {
         generateNewPlayer(client_fd, *currPlayers);     //If client sends INIT, give them an id and send it to them
         send_message(client_fd, WELCOME);               //Need to pass id to the message() function, ie message(int flag, int id)
-        exit(EXIT_SUCCESS);
+        //return;
     } else {
         fprintf(stderr, "INIT was not the first message received\n");
         exit(EXIT_FAILURE);

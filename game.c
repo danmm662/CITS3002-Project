@@ -84,12 +84,14 @@ int main(int argc, char *argv[])
     socklen_t client_len = sizeof(client);
 
     bool gameInSession = false;
-    time_t start = time(NULL);
+    //time_t start = time(NULL);
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
-    while (time(NULL) - start < 30) {  //Loop for accepting multiple clients
+    while (true) {  //Loop for accepting multiple clients
 
-        if(pArray[0].taken){
-            printf("Client %d has been allocated\n", pArray[0].playerID);
+        if (*currPlayers > 0) {
+            if(pArray[*currPlayers - 1].taken){
+                printf("Client %d has been succesfully added\n", pArray[*currPlayers - 1].playerID);
+            }
         }
 
         printf("Current players: %d\n", *currPlayers);
@@ -104,11 +106,11 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        if (client_fd < 0)
+        if (client_fd < 0 && errno == EAGAIN)
         {
-            fprintf(stderr, "Could not establish connection with new client\n");
-            close(client_fd);
-            continue;
+            fprintf(stderr, "Took too long to set up lobby\n");
+            //Need to send cancel message to all clients and close all sockets
+            exit(EXIT_FAILURE);
         }
 
         switch(pid = fork()) {
@@ -120,14 +122,14 @@ int main(int argc, char *argv[])
                 handleInit(client_fd);
                 *currPlayers = *currPlayers + 1;                
                 exit(EXIT_SUCCESS);
-                break;
+                
             default:
                 //Handle parent process
                 //Set up some shared memory here, so that when you fork() and call generateNewPlayer(), 
                 //the variables that it changes will be changed in the parent process.
         
                 //playGame() should only ever be called once.
-                
+                //sleep(1);       //Without this sleep, the program will go to top of while loop too quickly
                 if(!gameInSession && *currPlayers == MAX_PLAYERS) {
                     gameInSession = true;
                     playGame();

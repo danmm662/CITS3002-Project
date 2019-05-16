@@ -32,6 +32,7 @@ try:
         # Send data
         message = 'INIT'.encode()
         print ('sending "%s"' % message)
+		sleep(5)
         sock.sendall(message)
 
         # Look for the response
@@ -49,7 +50,7 @@ try:
                     id = int(mess[-3:])
                     print("Our id is %d" % id)
                     message = ('%d,MOV,CON,1' % id).encode()
-                    print("The games have begun")
+                    print("Received welcome message")
                     sock.sendall(message) # Client has ID 100
                     print('sending,"%s"' % message)
                 elif "ELIM" in mess:
