@@ -9,6 +9,13 @@
 //Replaced repeated code with for loop
 void init_game_data(void) {
     
+    currPlayers = mmap( NULL,        
+                        sizeof(currPlayers), //Number of players * size of the struct
+                        PROT_READ | PROT_WRITE,      //Read and write access to memory
+                        MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
+                        -1,
+                        0 );
+
     pArray = mmap( NULL,        
                    MAX_PLAYERS * sizeof(playerInfo), //Number of players * size of the struct
                    PROT_READ | PROT_WRITE,      //Read and write access to memory
@@ -16,11 +23,14 @@ void init_game_data(void) {
                    -1,
                    0 );
 
+    currPlayers = 0;
+
     for(int i = 0; i < MAX_PLAYERS; i++) {
         pArray[i].playerID = (i + 100);
         pArray[i].numLives = MAX_LIVES;
         pArray[i].taken = false;
         pArray[i].eliminated = false;
+        //printf("Set player%d id to %d\n", i, pArray[i].playerID);
     }
 }
 
@@ -152,10 +162,10 @@ bool check(int * dice, int flag, int con_choice) {
 }
 
 
-void generateNewPlayer(int client_fd, int currPlayers) {
+void generateNewPlayer(int client_fd, int currentPlayers) {
     
-    pArray[currPlayers].client_fd = client_fd;
-    pArray[currPlayers].taken = true;
+    pArray[currentPlayers].client_fd = client_fd;
+    pArray[currentPlayers].taken = true;
     
     /*
     switch(currPlayers) {

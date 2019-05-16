@@ -1,6 +1,6 @@
 #include "game.h"
 
-int currPlayers = 0;
+int *currPlayers;
 struct playerInfo *pArray;
 
 //struct playerInfo pArray[MAX_PLAYERS];
@@ -88,15 +88,19 @@ int main(int argc, char *argv[])
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (time(NULL) - start < 30) {  //Loop for accepting multiple clients
 
+       /* if(pArray[currPlayers].taken){
+            printf("Client %d has been allocated\n", pArray[currPlayers].playerID);
+        }*/
+
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
         
-        currPlayers++;
+        
 
-        if(currPlayers > MAX_PLAYERS){            //This checks whether game is full or not
+        if(currPlayers[0] > MAX_PLAYERS){            //This checks whether game is full or not
             send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
             printf("Another player attempted to join, was rejected\n");
             close(client_fd);
-            currPlayers--;
+            currPlayers[0]--;
             continue;
         }
 
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
             case 0:
                 close(server_fd);
                 handleInit(client_fd);
-                currPlayers++;
+                currPlayers[0]++;
                 break;
             default:
                 //Handle parent process
@@ -127,7 +131,8 @@ int main(int argc, char *argv[])
                 // );
         
                 //playGame() should only ever be called once.
-                if(!gameInSession && currPlayers == MAX_PLAYERS) {
+                
+                if(!gameInSession && currPlayers[0] == MAX_PLAYERS) {
                     gameInSession = true;
                     playGame();
                 }
