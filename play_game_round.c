@@ -9,21 +9,31 @@
 //Replaced repeated code with for loop
 void init_game_data(void) {
     
-    currPlayers = mmap( NULL,        
-                        sizeof(currPlayers), //Number of players * size of the struct
+    currPlayers = mmap( NULL,    //Setting the number of current players to shared memory    
+                        sizeof(*currPlayers), 
                         PROT_READ | PROT_WRITE,      //Read and write access to memory
                         MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
                         -1,
                         0 );
 
-    pArray = mmap( NULL,        
-                   MAX_PLAYERS * sizeof(playerInfo), //Number of players * size of the struct
+    if(currPlayers == MAP_FAILED){
+        fprintf(stderr, "Unable to map currPlayers to shared memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    pArray = mmap( NULL,        //Setting the array of player info to shared memory
+                   sizeof(playerInfo), //Number of players * size of the struct
                    PROT_READ | PROT_WRITE,      //Read and write access to memory
                    MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
                    -1,
                    0 );
 
-    currPlayers = 0;
+    if(pArray == MAP_FAILED){
+        fprintf(stderr, "Unable to map pArray to shared memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    *currPlayers = 0;
 
     for(int i = 0; i < MAX_PLAYERS; i++) {
         pArray[i].playerID = (i + 100);

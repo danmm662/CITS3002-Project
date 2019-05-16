@@ -127,13 +127,13 @@ void handleInit(int client_fd) {
         exit(EXIT_FAILURE);
     }
 
-    printf("New client's message: %s\n", buf);
+    printf("Client %d's message: %s\n", *currPlayers + 100, buf);
 
     struct messageProperties p;
     p = parse_message(buf);
 
     if(p.flag == INIT) {
-        generateNewPlayer(client_fd, currPlayers[0]);     //If client sends INIT, give them an id and send it to them
+        generateNewPlayer(client_fd, *currPlayers);     //If client sends INIT, give them an id and send it to them
         send_message(client_fd, WELCOME);               //Need to pass id to the message() function, ie message(int flag, int id)
         exit(EXIT_SUCCESS);
     } else {

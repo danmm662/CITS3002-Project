@@ -88,19 +88,19 @@ int main(int argc, char *argv[])
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (time(NULL) - start < 30) {  //Loop for accepting multiple clients
 
-       /* if(pArray[currPlayers].taken){
-            printf("Client %d has been allocated\n", pArray[currPlayers].playerID);
-        }*/
+        if(pArray[0].taken){
+            printf("Client %d has been allocated\n", pArray[0].playerID);
+        }
 
-        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
-        
-        
+        printf("Current players: %d\n", *currPlayers);
 
-        if(currPlayers[0] > MAX_PLAYERS){            //This checks whether game is full or not
+        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);        
+
+        if(*currPlayers > MAX_PLAYERS){            //This checks whether game is full or not
             send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
             printf("Another player attempted to join, was rejected\n");
             close(client_fd);
-            currPlayers[0]--;
+            *currPlayers = *currPlayers - 1;
             continue;
         }
 
@@ -118,21 +118,17 @@ int main(int argc, char *argv[])
             case 0:
                 close(server_fd);
                 handleInit(client_fd);
-                currPlayers[0]++;
+                *currPlayers = *currPlayers + 1;                
+                exit(EXIT_SUCCESS);
                 break;
             default:
                 //Handle parent process
                 //Set up some shared memory here, so that when you fork() and call generateNewPlayer(), 
                 //the variables that it changes will be changed in the parent process.
-                // struct playerInfo *playerArray;
-
-                // playerArray = mmap(NULL, MAX_PLAYERS * sizeof(playerInfo), PROT_READ | PROT_WRITE,
-                //               MAP_SHARED , -1, 0
-                // );
         
                 //playGame() should only ever be called once.
                 
-                if(!gameInSession && currPlayers[0] == MAX_PLAYERS) {
+                if(!gameInSession && *currPlayers == MAX_PLAYERS) {
                     gameInSession = true;
                     playGame();
                 }
