@@ -43,6 +43,7 @@ void send_message(int client_fd, int flag) {
             break;
         case ELIM :
             sprintf(messbuf, "%d,ELIM", playerID);
+            close(client_fd);
             break;
         case WELCOME :
             sprintf(messbuf, "WELCOME,%d", playerID);
@@ -78,7 +79,7 @@ void send_message(int client_fd, int flag) {
 */
 //Changed this so it takes an int argument, not sure how it would work
 //just taking void
-struct messageProperties handleGuess(int client_fd) {
+struct messageProperties getGuess(int client_fd) {
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char)); 
 

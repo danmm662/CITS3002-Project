@@ -119,11 +119,11 @@ int main(int argc, char *argv[])
                 //Handle parent process
                 //Set up some shared memory here, so that when you fork() and call generateNewPlayer(), 
                 //the variables that it changes will be changed in the parent process.
-                struct playerInfo *playerArray;
+                // struct playerInfo *playerArray;
 
-                playerArray = mmap(NULL, MAX_PLAYERS * sizeof(playerInfo), PROT_READ | PROT_WRITE,
-                              MAP_SHARED , -1, 0
-                );
+                // playerArray = mmap(NULL, MAX_PLAYERS * sizeof(playerInfo), PROT_READ | PROT_WRITE,
+                //               MAP_SHARED , -1, 0
+                // );
         
                 //playGame() should only ever be called once.
                 if(!gameInSession && currPlayers == MAX_PLAYERS) {
