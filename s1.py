@@ -13,7 +13,7 @@ if you know exactly what your expected values are.
 
 From this, you should be able to bootstrap message-parsing to and from the server whilst making it easy to debug.
 Then, start to add functions in the server code that actually 'run' the game in the background. 
-"""
+""" 
 
 import socket
 from time import sleep
@@ -48,7 +48,7 @@ try:
                 if "WELCOME" in mess:
                     id = int(mess[-3:])
                     print("Our id is %d" % id)
-                    message = ('%d,MOV,DOUB' % id).encode()
+                    message = ('%d,MOV,CON,3' % id).encode()
                     print("Received welcome message")
                     sock.sendall(message) # Client has ID 100
                     print('sending,"%s"' % message)

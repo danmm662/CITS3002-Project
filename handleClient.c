@@ -7,7 +7,7 @@
 
     if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
         fprintf(stderr, "Client timed out\n");
-        exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE); 
     }
     else if (read <= 0){
         fprintf(stderr, "Client read failed\n");

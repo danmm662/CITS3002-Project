@@ -10,7 +10,7 @@
 void init_game_data(void) {
     
     currPlayers = mmap( NULL,    //Setting the number of current players to shared memory    
-                        sizeof(*currPlayers), 
+                        sizeof(*currPlayers),  
                         PROT_READ | PROT_WRITE,      //Read and write access to memory
                         MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
                         -1,
@@ -41,7 +41,6 @@ void init_game_data(void) {
         pArray[i].taken = false;
         pArray[i].eliminated = false;
         pArray[i].won_last_round = false;
-        //printf("Set player%d id to %d\n", i, pArray[i].playerID);
     }
 }
 
@@ -63,7 +62,6 @@ void playGame(void) {
             //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
             //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
             if((child_pid = fork()) == 0) {
-                //int player = pArray[i].playerID;
                 int client_no = pArray[i].client_fd;
                 //Should our play round return a bool here?
 
@@ -77,8 +75,6 @@ void playGame(void) {
         }
 
         while((wpid = wait(&status)) > 0 );
-
-        //sleep(1);
 
         //Check to see whether or not the players won the last round
         for(int i = 0; i < MAX_PLAYERS; i++) {
@@ -127,9 +123,10 @@ void playRound(int player, int client_no, int *diceRoll) {
     //If correct, then make players bool-->won_last_round = true
     //If false, make players bool-->won_last_round = false
     if(checkedGuess) {
-        printf("Player %d made correct guess\n", player + 100);
+        printf("Client %d made correct guess\n", player + 100);
         pArray[player].won_last_round = true;
     } else {
+        printf("Client %d made incorrect guess\n", player + 100);
         pArray[player].won_last_round = false;
     }
 
@@ -192,25 +189,4 @@ void generateNewPlayer(int client_fd, int currentPlayers) {
     pArray[currentPlayers].client_fd = client_fd;
     pArray[currentPlayers].taken = true;
     
-    /*
-    switch(currPlayers) {
-        case 0:
-            player1.client_fd = client_fd;
-            player1.taken = true;
-            break;
-        case 1:
-            player2.client_fd = client_fd;
-            player2.taken = true;
-            break;
-        case 2:
-            player3.client_fd = client_fd;
-            player3.taken = true;
-            break;
-        case 3:
-            player4.client_fd = client_fd;
-            player4.taken = true;
-            break;
-        default :
-            fprintf(stderr, "Too many players have been accepted\n");
-    }*/
 }

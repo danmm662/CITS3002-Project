@@ -36,8 +36,7 @@
 
 
 extern int *currPlayers;
-//extern int playerInfo[][5];
-//extern int idCode[900]; //May not have to use this at all...
+
 extern enum {INIT, EVEN, ODD, DOUB, CON, WELCOME, START, 
              PASS, FAIL, ELIM, VICT, REJECT, CANCEL, ERR //don't know if ERR flag is needed
 }  flag;

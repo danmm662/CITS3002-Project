@@ -10,7 +10,7 @@
 
 void send_message(int client_fd, int flag) {
     //Set up buffer to send string
-    char * messbuf;
+    char * messbuf; 
     messbuf = calloc(BUFFER_SIZE, sizeof(char));
 
     int playerID;
@@ -103,7 +103,7 @@ struct messageProperties getGuess(int client_fd) {
     //char *message = calloc(strlen(buf), sizeof(char)); 
     //strcpy(message, buf);
     p = parse_message(buf);
-    //printf("Client %d's chose %d\n", p.id, p.flag);
+    //printf("Client %d chose %d\n", p.id, p.flag);
 
     return p;
 }
@@ -125,7 +125,6 @@ void handleInit(int client_fd) {
     }
     else if (read <= 0){
         fprintf(stderr, "Client read failed\n");
-        //message_elim(client_fd);
         send_message(client_fd, ELIM);
         exit(EXIT_FAILURE);
     }

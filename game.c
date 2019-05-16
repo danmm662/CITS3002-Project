@@ -1,6 +1,6 @@
 #include "game.h"
 
-int *currPlayers;
+int *currPlayers; 
 struct playerInfo *pArray;
 
 //struct playerInfo pArray[MAX_PLAYERS];
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     }
 
     srand(time(NULL)); 
-    //WORKING ON THIS CURRENTLY
+
     init_game_data();
 
     //Adding this new function to listen
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     socklen_t client_len = sizeof(client);
 
     bool gameInSession = false;
-    bool gameCompleted = false;
+    //bool gameCompleted = false;
     //time_t start = time(NULL);
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (true) {  //Loop for accepting multiple clients
@@ -92,7 +92,12 @@ int main(int argc, char *argv[])
         if(!gameInSession && *currPlayers == MAX_PLAYERS) {
             gameInSession = true;
             printf("Game started\n");
-            switch(pid = fork()) {
+            
+            playGame();
+            
+            //Currently, if we fork and put playGame() in parent it doesn't work, only allows one round
+
+            /*switch(pid = fork()) {
                 case -1:
                     perror("Fork error\n");
                     exit(EXIT_FAILURE);
@@ -102,14 +107,8 @@ int main(int argc, char *argv[])
                 default:
                     playGame();
                     break;
-            }
+            }*/
 
-        }
-
-        if (*currPlayers > 0) {
-            if(pArray[*currPlayers - 1].taken){
-                //printf("Client %d has been succesfully added\n", pArray[*currPlayers - 1].playerID);
-            }
         }
 
         if (*currPlayers > MAX_PLAYERS) {            //This checks whether game is full or not
@@ -118,8 +117,6 @@ int main(int argc, char *argv[])
                 close(client_fd);
                 //*currPlayers = *currPlayers - 1;
         }
-
-        //printf("Current players: %d\n", *currPlayers);
 
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);    
 
@@ -147,8 +144,7 @@ int main(int argc, char *argv[])
                 //the variables that it changes will be changed in the parent process.
         
                 //playGame() should only ever be called once.
-                sleep(1);       //Without this sleep, the program will go to top of while loop too quickly
-                
+                sleep(1);   //Without this sleep, the program will go to top of while loop too quickly                
                 break;
         }
         

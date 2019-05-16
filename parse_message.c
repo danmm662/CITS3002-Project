@@ -9,7 +9,7 @@ struct messageProperties parse_message(char *s){
 	struct messageProperties properties;
 	properties.id = -1;
 	properties.flag = ERR;
-	properties.conChoice = 0;
+	properties.conChoice = 0; 
 
 	char *buf1;
 	buf1 = calloc(BUFFER_SIZE, sizeof(char));

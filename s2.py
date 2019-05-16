@@ -15,7 +15,7 @@ From this, you should be able to bootstrap message-parsing to and from the serve
 Then, start to add functions in the server code that actually 'run' the game in the background. 
 """
 
-import socket
+import socket 
 from time import sleep
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

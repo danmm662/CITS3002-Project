@@ -6,7 +6,7 @@
 PROJECT = game
 HEADERS = $(PROJECT).h
 OBJ     = game.o messages.o play_game_round.o parse_message.o 
-
+ 
 
 C99 = cc -std=c99
 CFLAGS = -Wall -pedantic -Werror
