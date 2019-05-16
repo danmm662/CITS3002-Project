@@ -1,6 +1,7 @@
 #include "game.h"
 
 int currPlayers = 0;
+struct playerInfo *pArray;
 
 //struct playerInfo pArray[MAX_PLAYERS];
 //This specifies all our info for our clients, ie.
