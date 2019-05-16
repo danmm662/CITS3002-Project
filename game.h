@@ -33,7 +33,7 @@
 #define BUFFER_SIZE  1024
 #define MAX_LIVES    3        
 #define TIMEOUT      30
-#define MAX_PLAYERS  4
+#define MAX_PLAYERS  2
 
 
 extern int *currPlayers;

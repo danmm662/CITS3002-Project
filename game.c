@@ -88,24 +88,39 @@ int main(int argc, char *argv[])
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (true) {  //Loop for accepting multiple clients
 
+        if(!gameInSession && *currPlayers == MAX_PLAYERS) {
+            gameInSession = true;
+            printf("Game started\n");
+            switch(pid = fork()) {
+                case -1:
+                    perror("Fork error\n");
+                    exit(EXIT_FAILURE);
+                case 0:
+                    playGame();
+                default:
+                    break;
+            }
+
+        }
+
         if (*currPlayers > 0) {
             if(pArray[*currPlayers - 1].taken){
-                printf("Client %d has been succesfully added\n", pArray[*currPlayers - 1].playerID);
+                //printf("Client %d has been succesfully added\n", pArray[*currPlayers - 1].playerID);
             }
         }
 
-        printf("Current players: %d\n", *currPlayers);
-
-        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);        
-
-        if(*currPlayers > MAX_PLAYERS){            //This checks whether game is full or not
-            send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
-            printf("Another player attempted to join, was rejected\n");
-            close(client_fd);
-            *currPlayers = *currPlayers - 1;
-            continue;
+        if (*currPlayers > MAX_PLAYERS) {            //This checks whether game is full or not
+                send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
+                printf("Another player attempted to join, was rejected\n");
+                close(client_fd);
+                //*currPlayers = *currPlayers - 1;
         }
 
+        //printf("Current players: %d\n", *currPlayers);
+
+        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);    
+
+       
         if (client_fd < 0 && errno == EAGAIN)
         {
             fprintf(stderr, "Took too long to set up lobby\n");
@@ -120,7 +135,7 @@ int main(int argc, char *argv[])
             case 0:
                 close(server_fd);
                 handleInit(client_fd);
-                *currPlayers = *currPlayers + 1;                
+                *currPlayers = *currPlayers + 1;     
                 exit(EXIT_SUCCESS);
                 
             default:
@@ -129,11 +144,8 @@ int main(int argc, char *argv[])
                 //the variables that it changes will be changed in the parent process.
         
                 //playGame() should only ever be called once.
-                //sleep(1);       //Without this sleep, the program will go to top of while loop too quickly
-                if(!gameInSession && *currPlayers == MAX_PLAYERS) {
-                    gameInSession = true;
-                    playGame();
-                }
+                sleep(1);       //Without this sleep, the program will go to top of while loop too quickly
+                
                 break;
         }
         

@@ -26,8 +26,8 @@ void send_message(int client_fd, int flag) {
         }
         //This is for when there is no record of the client_fd being stored
         //Don't know if it is worth testing for
-        else if(i == (MAX_PLAYERS - 1)) { 
-            fprintf(stderr,"Unable to find the client's info\n"); 
+        else if(i == (MAX_PLAYERS - 1)) { //Problem occurs when client joins when lobby is full as they have not 
+            fprintf(stderr,"Unable to find the client's info\n"); //received a playerID yet
             exit(EXIT_FAILURE);
         }
     }
@@ -132,11 +132,16 @@ void handleInit(int client_fd) {
     struct messageProperties p;
     p = parse_message(buf);
 
-    if(p.flag == INIT) {
+    if(p.flag == INIT && *currPlayers < MAX_PLAYERS) {
         generateNewPlayer(client_fd, *currPlayers);     //If client sends INIT, give them an id and send it to them
         send_message(client_fd, WELCOME);               //Need to pass id to the message() function, ie message(int flag, int id)
-        //return;
-    } else {
+        return;
+    } 
+    else if(p.flag == INIT && *currPlayers >= MAX_PLAYERS){
+        send_message(client_fd, REJECT);
+        
+    }
+    else {
         fprintf(stderr, "INIT was not the first message received\n");
         exit(EXIT_FAILURE);
     }

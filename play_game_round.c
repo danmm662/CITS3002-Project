@@ -22,7 +22,7 @@ void init_game_data(void) {
     }
 
     pArray = mmap( NULL,        //Setting the array of player info to shared memory
-                   sizeof(playerInfo), //Number of players * size of the struct
+                   MAX_PLAYERS * sizeof(playerInfo), //Number of players * size of the struct
                    PROT_READ | PROT_WRITE,      //Read and write access to memory
                    MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
                    -1,

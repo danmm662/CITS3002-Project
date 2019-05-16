@@ -32,7 +32,7 @@ try:
         # Send data
         message = 'INIT'.encode()
         print ('sending "%s"' % message)
-		sleep(5)
+        sleep(5)
         sock.sendall(message)
 
         # Look for the response
