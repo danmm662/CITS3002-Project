@@ -50,13 +50,13 @@ struct messageProperties parse_message(char *s){
 		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings,
 			properties.flag = EVEN;			//maybe another way to check what move the client used?
 		}
-		else if(strcmp(buf1, "ODD") != 0){
+		else if(strcmp(buf1, "ODD") == 0){
 			properties.flag = ODD;
 		}
-		else if(strcmp(buf1, "DOUB") != 0){
+		else if(strcmp(buf1, "DOUB") == 0){
 			properties.flag = DOUB;
 		}
-		else if(strcmp(buf1, "CON") != 0){
+		else if(strcmp(buf1, "CON") == 0){
 			properties.flag = CON;
 			
 			buf1 = strtok(NULL, ",");

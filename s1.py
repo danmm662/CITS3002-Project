@@ -48,7 +48,7 @@ try:
                 if "WELCOME" in mess:
                     id = int(mess[-3:])
                     print("Our id is %d" % id)
-                    message = ('%d,MOV,CON,1' % id).encode()
+                    message = ('%d,MOV,DOUB' % id).encode()
                     print("Received welcome message")
                     sock.sendall(message) # Client has ID 100
                     print('sending,"%s"' % message)
@@ -67,6 +67,9 @@ try:
                     print('sending,"%s"' % message)
                 elif "REJECT" in mess:
                     print("Server is full, try again later")
+                    break
+                elif "VICT" in mess:
+                    print("We won")
                     break
                 else:
                     print ( 'received "%s"' % mess)

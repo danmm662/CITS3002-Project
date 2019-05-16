@@ -43,7 +43,6 @@ void send_message(int client_fd, int flag) {
             break;
         case ELIM :
             sprintf(messbuf, "%d,ELIM", playerID);
-            close(client_fd);
             break;
         case WELCOME :
             sprintf(messbuf, "WELCOME,%d", playerID);
@@ -98,10 +97,14 @@ struct messageProperties getGuess(int client_fd) {
         //exit(EXIT_FAILURE);
     }
 
-    printf("New client's message: %s\n", buf);
+    
 
     struct messageProperties p;
+    //char *message = calloc(strlen(buf), sizeof(char)); 
+    //strcpy(message, buf);
     p = parse_message(buf);
+    //printf("Client %d's chose %d\n", p.id, p.flag);
+
     return p;
 }
 /*

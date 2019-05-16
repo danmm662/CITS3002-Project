@@ -23,7 +23,6 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
-
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
@@ -69,13 +68,13 @@ extern struct messageProperties parse_message(char *);
 extern int*                     roll_dice(void);
 extern bool                     check_even(int *);
 extern bool                     check_odd(int *);
-extern bool                     check_doubles(int *);
+extern bool                     check_doubles(int[]);
 extern bool                     check_contains(int *, int);
 extern bool                     check(int *, int, int);
 extern void                     init_game_data(void);
 extern void                     generateNewPlayer(int, int);
 extern void                     playGame(void);
-extern void                     playRound(int, int);
+extern void                     playRound(int, int, int *);
 
 //Functions from messages.c
 extern void                     send_message(int, int);

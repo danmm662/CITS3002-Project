@@ -40,6 +40,7 @@ void init_game_data(void) {
         pArray[i].numLives = MAX_LIVES;
         pArray[i].taken = false;
         pArray[i].eliminated = false;
+        pArray[i].won_last_round = false;
         //printf("Set player%d id to %d\n", i, pArray[i].playerID);
     }
 }
@@ -55,57 +56,70 @@ void playGame(void) {
         pid_t child_pid, wpid;
         int status = 0;
 
+        int rolled_dice[2] = {1, 1}; // = roll_dice();
+
         for(int i = 0; i < MAX_PLAYERS; i++) {
             
             //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
             //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
             if((child_pid = fork()) == 0) {
-                int player = pArray[i].playerID;
+                //int player = pArray[i].playerID;
                 int client_no = pArray[i].client_fd;
                 //Should our play round return a bool here?
 
                 //THIS PLAY ROUND HAS TO WAIT FOR THE CLIENT TO SEND A MESSAGE FIRST
                 //AND THEN PROCESS THE ROUND... SO MAYBE HAVE A FUNCTION THAT JUST SITS THERE AND WAITS FOR A CLIENT 
                 //TO CHOOSE AN OPTION
-                playRound(player, client_no);
+                sleep(2);
+                playRound(i, client_no, rolled_dice);
                 exit(EXIT_SUCCESS);
             }
         }
 
         while((wpid = wait(&status)) > 0 );
 
+        //sleep(1);
+
         //Check to see whether or not the players won the last round
         for(int i = 0; i < MAX_PLAYERS; i++) {
             if(!pArray[i].won_last_round) {
                 pArray[i].numLives--;
+                send_message(pArray[i].client_fd, FAIL);
+            }
+            else {
+                send_message(pArray[i].client_fd, PASS);
+                continue;
             }
 
             //Then check if they should be eliminated
             if(pArray[i].numLives < 1) {
                 send_message(pArray[i].client_fd, ELIM);
+                pArray[i].eliminated = true;
+                close(pArray[i].client_fd);
                 elimsSent++;
+                sleep(1);
             }
         }
         
+
         //Check if there is a victor and send victory message if there is one
-        if(elimsSent >= 3) {
+        if(elimsSent >= (MAX_PLAYERS - 1)) {
             victorFound = true;
             for(int i = 0; i < MAX_PLAYERS; i++) {
                 if(!pArray[i].eliminated) {
                     send_message(pArray[i].client_fd, VICT);
+                    close(pArray[i].client_fd);
+                    exit(EXIT_SUCCESS);
                 }
             }
         }
-
     }
 }
     
-void playRound(int player, int client_no) {
+void playRound(int player, int client_no, int *diceRoll) {
     
     //Get the guess from a client
     struct messageProperties guess = getGuess(client_no);
-    //Roll a new dice
-    int * diceRoll = roll_dice();
 
     //Check whether this guess is correct
     bool checkedGuess = check(diceRoll, guess.flag, guess.conChoice);
@@ -113,7 +127,8 @@ void playRound(int player, int client_no) {
     //If correct, then make players bool-->won_last_round = true
     //If false, make players bool-->won_last_round = false
     if(checkedGuess) {
-        pArray[player].won_last_round =  true;
+        printf("Player %d made correct guess\n", player + 100);
+        pArray[player].won_last_round = true;
     } else {
         pArray[player].won_last_round = false;
     }
@@ -145,7 +160,7 @@ bool check_odd(int * dice) {
     return(sum > 5 && (sum % 2 == 1));
 }
 
-bool check_doubles(int * dice) {
+bool check_doubles(int dice[]) {
     //two of the same numbers
     return(dice[0] == dice[1]);
 }

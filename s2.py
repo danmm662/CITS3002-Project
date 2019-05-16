@@ -32,7 +32,7 @@ try:
         # Send data
         message = 'INIT'.encode()
         print ('sending "%s"' % message)
-        sleep(5)
+        #sleep(5)
         sock.sendall(message)
 
         # Look for the response
@@ -49,7 +49,7 @@ try:
                 if "WELCOME" in mess:
                     id = int(mess[-3:])
                     print("Our id is %d" % id)
-                    message = ('%d,MOV,CON,1' % id).encode()
+                    message = ('%d,MOV,DOUB' % id).encode()
                     print("Received welcome message")
                     sock.sendall(message) # Client has ID 100
                     print('sending,"%s"' % message)
@@ -58,7 +58,7 @@ try:
                     break
                 elif "PASS" in mess:
                     print("Your choice was correct")
-                    message = ('%d,MOV,EVEN' % id).encode()
+                    message = ('%d,MOV,DOUB' % id).encode()
                     sock.sendall(message) # Client sends EVEN choice
                     print('sending,"%s"' % message)
                 elif "FAIL" in mess:
@@ -69,6 +69,9 @@ try:
                 elif "REJECT" in mess:
                     print("Server is full, try again later")
                     break
+                elif "VICT" in mess:
+				    print("We won")
+				    break
                 else:
                     print ( 'received "%s"' % mess)
            

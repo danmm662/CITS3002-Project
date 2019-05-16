@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
     socklen_t client_len = sizeof(client);
 
     bool gameInSession = false;
+    bool gameCompleted = false;
     //time_t start = time(NULL);
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (true) {  //Loop for accepting multiple clients
@@ -96,8 +97,10 @@ int main(int argc, char *argv[])
                     perror("Fork error\n");
                     exit(EXIT_FAILURE);
                 case 0:
-                    playGame();
+                    //Handle new clients trying to join mid game
+                    break;
                 default:
+                    playGame();
                     break;
             }
 
@@ -121,12 +124,12 @@ int main(int argc, char *argv[])
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);    
 
        
-        if (client_fd < 0 && errno == EAGAIN)
+        /*if (client_fd < 0 && errno == EAGAIN)
         {
             fprintf(stderr, "Took too long to set up lobby\n");
             //Need to send cancel message to all clients and close all sockets
             exit(EXIT_FAILURE);
-        }
+        }*/
 
         switch(pid = fork()) {
             case -1:
