@@ -79,18 +79,28 @@ void playGame(void) {
 
     }
 }
-
+    
 void playRound(int player, int client_no) {
     
-    //HERE WE MUST WAIT FOR THE INCOMING SIGNAL FROM THE CLIENT 
+    //Get the guess from a client
+    struct messageProperties guess = getGuess(client_no);
+    //Roll a new dice
+    int * diceRoll = roll_dice();
 
-    //THEN WE PROCESS IT
+    //Check whether this guess is correct
+    bool checkedGuess = check(diceRoll, guess.flag, guess.conChoice);
     
-    //int * diceRoll = roll_dice(); Commented out because compiler is annoying
+    //If correct, then make players bool-->won_last_round = true
+    //If false, make players bool-->won_last_round = false
+    if(checkedGuess) {
+        pArray[player].won_last_round =  true;
+    } else {
+        pArray[player].won_last_round = false;
+    }
 
-    //DO stuff
-
+    //Return to the playGame function
 }
+
 
 int * roll_dice() {
     int max = 6;

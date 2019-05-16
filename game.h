@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/time.h>
+
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
@@ -78,7 +79,7 @@ extern void                     playRound(int, int);
 
 //Functions from messages.c
 extern void                     send_message(int, int);
-extern struct messageProperties handleGuess(int);
+extern struct messageProperties getGuess(int);
 extern void                     handleInit(int);
 
 //Functions from handleClient.c
