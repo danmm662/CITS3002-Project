@@ -11,6 +11,8 @@
 
 #endif /* headers_h */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,7 +58,7 @@ extern struct playerInfo {
 } playerInfo;
 
 //extern struct playerInfo player1, player2, player3, player4;    Don't think we need this
-extern struct playerInfo pArray[];
+extern struct playerInfo *pArray;
 
 
 //Functions from parse_message

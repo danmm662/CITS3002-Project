@@ -9,6 +9,13 @@
 //Replaced repeated code with for loop
 void init_game_data(void) {
     
+    struct playerInfo *pArray = mmap( NULL,        
+                                      MAX_PLAYERS * sizeof(playerInfo), //Number of players * size of the struct
+                                      PROT_READ | PROT_WRITE,      //Read and write access to memory
+                                      MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
+                                      -1,
+                                      0 );
+
     for(int i = 0; i < MAX_PLAYERS; i++) {
         pArray[i].playerID = (i + 100);
         pArray[i].numLives = MAX_LIVES;
