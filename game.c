@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
             case -1:
                 perror("Fork error\n");
                 exit(EXIT_FAILURE);
-            case 0:
+            case 0:                         //Child process
                 close(server_fd);
                 handleInit(client_fd);
                 *currPlayers = *currPlayers + 1;     

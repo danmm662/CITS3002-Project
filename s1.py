@@ -39,7 +39,6 @@ try:
         #amount_expected = len(message)
         
         while True: #amount_received < amount_expected:
-            sleep(2)
             data = sock.recv(4096)
             # #amount_received += len(data)
             if(data != None):

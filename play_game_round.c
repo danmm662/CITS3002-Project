@@ -39,7 +39,7 @@ void init_game_data(void) {
         pArray[i].playerID = (i + 100);
         pArray[i].numLives = MAX_LIVES;
         pArray[i].taken = false;
-        pArray[i].eliminated = false;
+        pArray[i].eliminated = -1;
         pArray[i].won_last_round = false;
     }
 }
@@ -48,7 +48,8 @@ void playGame(void) {
 
     //int playersLeft = MAX_PLAYERS; Commented out because compiler is annoying
     bool victorFound = false;
-    int elimsSent = 0;
+    int round = 0;
+    int playersLeft = MAX_PLAYERS;
 
     while(!victorFound) {
     
@@ -76,9 +77,19 @@ void playGame(void) {
 
         while((wpid = wait(&status)) > 0 );
 
+        round++;        
+
         //Check to see whether or not the players won the last round
         for(int i = 0; i < MAX_PLAYERS; i++) {
-            if(!pArray[i].won_last_round) {
+            if (pArray[i].eliminated == -2) {        //Decrementing players left for when player drops out
+                playersLeft--;
+                pArray[i].eliminated = 0;
+                break;
+            }
+            else if (pArray[i].eliminated > -1) {
+                break;
+            }
+            else if(!pArray[i].won_last_round) {
                 pArray[i].numLives--;
                 send_message(pArray[i].client_fd, FAIL);
             }
@@ -88,27 +99,39 @@ void playGame(void) {
 
             //Then check if they should be eliminated
             if(pArray[i].numLives < 1) {
-                printf("Sending elim message to %d\n", pArray[i].playerID);
-                send_message(pArray[i].client_fd, ELIM);
-                printf("Sent elim message to %d\n", pArray[i].playerID);
-                pArray[i].eliminated = true;
-                close(pArray[i].client_fd);
-                elimsSent++;
+                pArray[i].eliminated = round;
+                playersLeft--;
                 sleep(1);
             }
         }
         
 
         //Check if there is a victor and send victory message if there is one
-        if(elimsSent >= (MAX_PLAYERS - 1)) {
-            victorFound = true;
-            for(int i = 0; i < MAX_PLAYERS; i++) {
-                if(!pArray[i].eliminated) {
-                    sleep(1);
+        for(int i = 0; i < MAX_PLAYERS; i++) {
+            if (playersLeft == 1){          //Normal case, if there is one player left in game
+                if (pArray[i].eliminated < 0){       //Find player not elimmed, send VICT
+                    printf("Player %d won!\n", pArray[i].playerID);
                     send_message(pArray[i].client_fd, VICT);
-                    printf("Client %d won the game!\n", pArray[i].playerID);
                     close(pArray[i].client_fd);
-                    exit(EXIT_SUCCESS);
+                }
+                else {
+                    send_message(pArray[i].client_fd, ELIM);
+                    close(pArray[i].client_fd);
+                }
+                victorFound = true;
+            }
+            else if (playersLeft == 0) {            //Case if there is a draw between 2 or more players
+                if (pArray[i].eliminated == round) {
+                    printf("Player %d won!\n", pArray[i].playerID);
+                    send_message(pArray[i].client_fd, VICT);
+                    close(pArray[i].client_fd);
+                }
+                victorFound = true;
+            }
+            else {                              //When game hasn't finished yet
+                if (pArray[i].eliminated > 0) {
+                    send_message(pArray[i].client_fd, ELIM);
+                    close(pArray[i].client_fd);
                 }
             }
         }
@@ -129,15 +152,15 @@ void playRound(int player, int client_fd, int *diceRoll) {
 
     if (read == 0) {
         printf("Client %d dropped out\n", playerID);
-        pArray[player].numLives = -1;
+        pArray[player].eliminated = -2;
         return;
     }
-    else if (read <= 0 && errno == EAGAIN) {         //Timeout for client's move
+    else if (read < 0 && errno == EAGAIN) {         //Timeout for client's move
         printf("Client %d timed out\n", playerID);
         pArray[player].won_last_round = false;       //Set to false so they lose a life
         return;                                      //Return to play_game()
     }
-    else if (read <= 0){                            //Don't know what to do for this one
+    else if (read < 0){                            //Don't know what to do for this one
         fprintf(stderr, "Client read failed\n");
         //PROBABLY SHOULD MAKE A WAY FOR THIS TO RETURN A STATE WHERE THEY LOSE A LIFE IF 
         //THE MESSAGE IS NOT READABLE

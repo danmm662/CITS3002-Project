@@ -26,7 +26,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
-
+#include <ctype.h>
 
 //Global variables/data structures
 #define BUFFER_SIZE  1024
@@ -53,7 +53,7 @@ extern struct playerInfo {
     int numLives;
     bool taken;
     bool won_last_round;
-    bool eliminated;
+    int eliminated;               //Cases for eliminated: -2 dropped out, -1 still alive, >-1 is round elimmed
 } playerInfo;
 
 //extern struct playerInfo player1, player2, player3, player4;    Don't think we need this

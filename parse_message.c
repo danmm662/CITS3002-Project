@@ -14,7 +14,7 @@ struct messageProperties parse_message(char *s){
 	char *buf1;
 	buf1 = calloc(BUFFER_SIZE, sizeof(char));
 
-	if(strcmp(s, "INIT") == 0) {
+	if (strcmp(s, "INIT") == 0) {
 		properties.flag = INIT;
 	}
 	else {  
@@ -23,7 +23,7 @@ struct messageProperties parse_message(char *s){
 		int id;
 		buf1 = strtok(s, ",");
 
-		id = atoi(buf1);  //This will crash if buf1 is not an int, may need to test for that first
+		id = atoi(buf1);  //This will cause an error if buf1 is not an int, may need to test for that first
 
 		//Check if id provided is a valid id or not, tell client if it isn't
 		//Need to modify this so it checks that the playerID and the client_fd match as well
@@ -47,8 +47,8 @@ struct messageProperties parse_message(char *s){
 
 		buf1 = strtok(NULL, ",");
 
-		if(strcmp(buf1, "EVEN") == 0){		//Can't use switches with strings,
-			properties.flag = EVEN;			//maybe another way to check what move the client used?
+		if(strcmp(buf1, "EVEN") == 0){		
+			properties.flag = EVEN;			
 		}
 		else if(strcmp(buf1, "ODD") == 0){
 			properties.flag = ODD;
@@ -60,6 +60,12 @@ struct messageProperties parse_message(char *s){
 			properties.flag = CON;
 			
 			buf1 = strtok(NULL, ",");
+			
+			if (!isdigit(buf1[0])) {	 //Makes sure that it is actually a digit before calling atoi()
+				properties.flag = ERR;
+				return properties;
+			}
+
 			int num = atoi(buf1);
 			
 			if(num < 1 || num > 6){		//Returns the properties struct with the ERR flag
