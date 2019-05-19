@@ -31,7 +31,7 @@
 //Global variables/data structures
 #define BUFFER_SIZE  1024
 #define MAX_LIVES    3        
-#define TIMEOUT      3
+#define TIMEOUT      30
 #define MAX_PLAYERS  2
 
 

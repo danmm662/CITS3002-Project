@@ -101,22 +101,22 @@ int main(int argc, char *argv[])
                     perror("Fork error\n");
                     exit(EXIT_FAILURE);
                 case 0:
-                    //Handle new clients trying to join mid game
+                    //Handle new clients trying to join mid game, send REJECT message to them
                     exit(EXIT_SUCCESS);
                     break;
                 default:
-                    playGame();
-                    break;
+                    playGame();         //Need to tear down server after play_game()
+                    exit(EXIT_SUCCESS);
             }
 
         }
 
-        if (*currPlayers > MAX_PLAYERS) {            //This checks whether game is full or not
+        /*if (*currPlayers > MAX_PLAYERS) {            //This checks whether game is full or not
                 send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
                 printf("Another player attempted to join, was rejected\n");
                 close(client_fd);
-                //*currPlayers = *currPlayers - 1;
-        }
+                *currPlayers = *currPlayers - 1;
+        }*/
 
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);    
 

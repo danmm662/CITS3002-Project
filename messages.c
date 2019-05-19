@@ -21,12 +21,12 @@ void send_message(int client_fd, int flag) {
 
     for(int i = 0; i < MAX_PLAYERS; i++) {
         p = pArray[i];
-        if(p.client_fd == client_fd){
+        if (p.client_fd == client_fd){
             break;
         }
         //This is for when there is no record of the client_fd being stored
         //Don't know if it is worth testing for
-        else if(i == (MAX_PLAYERS - 1)) { //Problem occurs when client joins when lobby is full as they have not 
+        else if (i == (MAX_PLAYERS - 1)) { //Problem occurs when client joins when lobby is full as they have not 
             fprintf(stderr,"Unable to find the client's info\n"); //received a playerID yet
             exit(EXIT_FAILURE);
         }
@@ -110,6 +110,7 @@ void send_message(int client_fd, int flag) {
 
     return p;
 }*/
+
 /*
 * @returns a bool which is true if we received an INIT, false if we do not
 * The whole function will only be called when we have forked() another process,
