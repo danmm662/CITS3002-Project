@@ -22,6 +22,9 @@ struct messageProperties parse_message(char *s){
 		
 		int id;
 		buf1 = strtok(s, ",");
+		if(buf1 == NULL) {
+			return properties;	
+		}
 
 		id = atoi(buf1);  //This will cause an error if buf1 is not an int, may need to test for that first
 
@@ -40,12 +43,18 @@ struct messageProperties parse_message(char *s){
 		properties.id = id;
 
 		buf1 = strtok(NULL, ",");
+		if(buf1 == NULL) {
+			return properties;	
+		}
 
 		if(strcmp(buf1, "MOV") != 0){ 	//Checks that message contains MOV, returns the struct with the
 			return properties;			//ERR flag if it doesn't
 		}
 
 		buf1 = strtok(NULL, ",");
+		if(buf1 == NULL) {
+			return properties;	
+		}
 
 		if(strcmp(buf1, "EVEN") == 0){		
 			properties.flag = EVEN;			
@@ -57,21 +66,22 @@ struct messageProperties parse_message(char *s){
 			properties.flag = DOUB;
 		}
 		else if(strcmp(buf1, "CON") == 0){
-			properties.flag = CON;
-			
+
 			buf1 = strtok(NULL, ",");
+			if(buf1 == NULL) {
+				return properties;	
+			}
 			
 			if (!isdigit(buf1[0])) {	 //Makes sure that it is actually a digit before calling atoi()
-				properties.flag = ERR;
 				return properties;
 			}
 
 			int num = atoi(buf1);
 			
 			if(num < 1 || num > 6){		//Returns the properties struct with the ERR flag
-				properties.flag = ERR;
 				return properties;
 			}
+			properties.flag = CON;
 			properties.conChoice = num;			
 		}
 	}	

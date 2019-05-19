@@ -128,7 +128,6 @@ int main(int argc, char *argv[])
                     break; 
             }
         }
-
        
         //This is for cancelling a game when too few players show up before the timeout
         if (client_fd < 0 && errno == EAGAIN && !gameInSession)

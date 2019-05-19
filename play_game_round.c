@@ -169,6 +169,10 @@ void playRound(int player, int client_fd, int *diceRoll) {
 
     p = parse_message(buf);
 
+    if(p.flag == ERR) {
+        printf("Client")
+    }
+
     //Check whether this guess is correct
     bool checkedGuess = check(diceRoll, p.flag, p.conChoice);
     

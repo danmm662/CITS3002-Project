@@ -48,6 +48,7 @@ try:
                 if "WELCOME" in mess:
                     id = int(mess[-3:])
                     print("Our id is %d" % id)
+                    #sleep(30)
                     message = ('%d,MOV,DOUB' % id).encode()
                     print("Received welcome message")
                     sock.sendall(message) # Client has ID 100
