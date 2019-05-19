@@ -3,17 +3,17 @@ Socket Programming
 
 To do:
   
-    Deal with timeouts for players making a move, make sure they lose a life
+    Deal with timeouts for players making a move, make sure they lose a life --DONE
   
     Tier 3:
     
-      Players leaving mid game
+      Players leaving mid game --only works sometimes
     
-      Players trying to join mid game
+      Players trying to join mid game --DONE
   
     Tier 4:
     
-      Handle incorrect moves without crashing server
+      Handle incorrect moves without crashing server --DONE
     
       Kick cheating players
   
