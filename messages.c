@@ -14,7 +14,7 @@ void send_reject(int client_fd) {
 
     int err = send(client_fd, messbuf, strlen(messbuf), 0);
     if(err < 0) {
-        fprintf(stderr, "Message failed to send\n");
+        perror("Reject message failed to send");
         exit(EXIT_FAILURE);
     }
     free(messbuf);
@@ -138,9 +138,9 @@ void handleInit(int client_fd) {
         close(client_fd);
         exit(EXIT_FAILURE);
     }
-    else if (read <= 0){
-        fprintf(stderr, "Client read failed\n");
-        send_message(client_fd, ELIM);
+    else if (read < 0) {
+        perror("Recv failure");
+        send_reject(client_fd);
         exit(EXIT_FAILURE);
     }
 

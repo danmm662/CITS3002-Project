@@ -114,10 +114,10 @@ int main(int argc, char *argv[])
 
         // Here we deal with players who are joining late -- the game is already in session
         // We send them a REJECT message
-        if(gameInSession){ 
+        if(gameInSession && client_fd != -1){ 
             switch(pid = fork()) {
                 case -1:
-                    perror("Fork error\n");
+                    perror("Fork error");
                     exit(EXIT_FAILURE);
                 case 0:
                     handleInit(client_fd);
@@ -144,18 +144,20 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
-        switch(pid = fork()) {
-            case -1:
-                perror("Fork error\n");
-                exit(EXIT_FAILURE);
-            case 0:
-                //close(server_fd);
-                handleInit(client_fd);
-                *currPlayers = *currPlayers + 1;     
-                exit(EXIT_SUCCESS);                
-            default:
-                sleep(1);   //Without this sleep, the program will go to top of while loop too quickly                
-                break;
+        if(!gameInSession){
+            switch(pid = fork()) {
+                case -1:
+                    perror("Fork error\n");
+                    exit(EXIT_FAILURE);
+                case 0:
+                    //close(server_fd);
+                    handleInit(client_fd);
+                    *currPlayers = *currPlayers + 1;     
+                    exit(EXIT_SUCCESS);                
+                default:
+                    sleep(1);   //Without this sleep, the program will go to top of while loop too quickly                
+                    break;
+            }
         }
         
     }  
