@@ -46,16 +46,15 @@ int main(int argc, char *argv[])
 
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    opt_val = 1;
+    server.sin_addr.s_addr = htonl(INADDR_ANY);    
 
     struct timeval tv;
-    //Set the timeout value to 30 seconds
+    //Set the timeout value to TIMEOUT
     tv.tv_sec = TIMEOUT;
     tv.tv_usec = 0;
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-    
+
+    opt_val = 1;    
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt_val, sizeof opt_val);
 
 
@@ -91,23 +90,24 @@ int main(int argc, char *argv[])
 
         if(!gameInSession && *currPlayers == MAX_PLAYERS) {
             gameInSession = true;
-            printf("Game started\n");
+            printf("%d players have joined, game has started\n", MAX_PLAYERS);
             
-            playGame();
+            //playGame();
             
             //Currently, if we fork and put playGame() in parent it doesn't work, only allows one round
 
-            /*switch(pid = fork()) {
+            switch(pid = fork()) {
                 case -1:
                     perror("Fork error\n");
                     exit(EXIT_FAILURE);
                 case 0:
                     //Handle new clients trying to join mid game
+                    exit(EXIT_SUCCESS);
                     break;
                 default:
                     playGame();
                     break;
-            }*/
+            }
 
         }
 
@@ -121,12 +121,19 @@ int main(int argc, char *argv[])
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);    
 
        
-        /*if (client_fd < 0 && errno == EAGAIN)
+        //This is for cancelling a game when too few players show up before the timeout
+        if (client_fd < 0 && errno == EAGAIN && !gameInSession)
         {
             fprintf(stderr, "Took too long to set up lobby\n");
-            //Need to send cancel message to all clients and close all sockets
+            for(int i = 0; i < MAX_PLAYERS; i++) {
+                if(pArray[i].taken){
+                    send_message(pArray[i].client_fd, CANCEL);
+                    close(pArray[i].client_fd);
+                }
+            }
+            close(server_fd);           //Tear down server
             exit(EXIT_FAILURE);
-        }*/
+        }
 
         switch(pid = fork()) {
             case -1:
@@ -136,8 +143,7 @@ int main(int argc, char *argv[])
                 close(server_fd);
                 handleInit(client_fd);
                 *currPlayers = *currPlayers + 1;     
-                exit(EXIT_SUCCESS);
-                
+                exit(EXIT_SUCCESS);                
             default:
                 //Handle parent process
                 //Set up some shared memory here, so that when you fork() and call generateNewPlayer(), 

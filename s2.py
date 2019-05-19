@@ -69,6 +69,9 @@ try:
                 elif "REJECT" in mess:
                     print("Server is full, try again later")
                     break
+                elif "CANCEL" in mess:
+                    print("Took too long to fill up server")
+                    break
                 elif "VICT" in mess:
 				    print("We won")
 				    break

@@ -78,13 +78,19 @@ void send_message(int client_fd, int flag) {
 */
 //Changed this so it takes an int argument, not sure how it would work
 //just taking void
-struct messageProperties getGuess(int client_fd) {
+/*struct messageProperties getGuess(int client_fd) {
     char *buf;
     buf = calloc(BUFFER_SIZE, sizeof(char)); 
 
+    struct messageProperties p;
+
     int read = recv(client_fd, buf, BUFFER_SIZE, 0);
 
-    if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
+    if (read == 0) {
+        printf("Client %d dropped out\n", client_fd);
+        close
+    }
+    else if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
         fprintf(stderr, "Client timed out\n");
         //exit(EXIT_FAILURE);
     }
@@ -95,18 +101,15 @@ struct messageProperties getGuess(int client_fd) {
         //PROBABLY SHOULD MAKE A WAY FOR THIS TO RETURN A STATE WHERE THEY LOSE A LIFE IF 
         //THE MESSAGE IS NOT READABLE
         //exit(EXIT_FAILURE);
-    }
 
-    
-
-    struct messageProperties p;
+    }    
     //char *message = calloc(strlen(buf), sizeof(char)); 
     //strcpy(message, buf);
     p = parse_message(buf);
     //printf("Client %d chose %d\n", p.id, p.flag);
 
     return p;
-}
+}*/
 /*
 * @returns a bool which is true if we received an INIT, false if we do not
 * The whole function will only be called when we have forked() another process,
@@ -119,8 +122,10 @@ void handleInit(int client_fd) {
 
     int read = recv(client_fd, buf, BUFFER_SIZE, 0);
 
-    if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, not sure if necessary
+    if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, send reject message
         fprintf(stderr, "New client timed out\n");
+        send_message(client_fd, REJECT);
+        close(client_fd);
         exit(EXIT_FAILURE);
     }
     else if (read <= 0){
@@ -139,12 +144,12 @@ void handleInit(int client_fd) {
         send_message(client_fd, WELCOME);               //Need to pass id to the message() function, ie message(int flag, int id)
         return;
     } 
-    else if(p.flag == INIT && *currPlayers >= MAX_PLAYERS){
-        send_message(client_fd, REJECT);
-        
+    else if(p.flag == INIT && *currPlayers >= MAX_PLAYERS){     //Handling of REJECT message happens here
+        send_message(client_fd, REJECT);        
     }
     else {
         fprintf(stderr, "INIT was not the first message received\n");
+        close(client_fd);
         exit(EXIT_FAILURE);
     }
 

@@ -84,12 +84,13 @@ void playGame(void) {
             }
             else {
                 send_message(pArray[i].client_fd, PASS);
-                continue;
             }
 
             //Then check if they should be eliminated
             if(pArray[i].numLives < 1) {
+                printf("Sending elim message to %d\n", pArray[i].playerID);
                 send_message(pArray[i].client_fd, ELIM);
+                printf("Sent elim message to %d\n", pArray[i].playerID);
                 pArray[i].eliminated = true;
                 close(pArray[i].client_fd);
                 elimsSent++;
@@ -103,7 +104,9 @@ void playGame(void) {
             victorFound = true;
             for(int i = 0; i < MAX_PLAYERS; i++) {
                 if(!pArray[i].eliminated) {
+                    sleep(1);
                     send_message(pArray[i].client_fd, VICT);
+                    printf("Client %d won the game!\n", pArray[i].playerID);
                     close(pArray[i].client_fd);
                     exit(EXIT_SUCCESS);
                 }
@@ -112,21 +115,47 @@ void playGame(void) {
     }
 }
     
-void playRound(int player, int client_no, int *diceRoll) {
+void playRound(int player, int client_fd, int *diceRoll) {
     
     //Get the guess from a client
-    struct messageProperties guess = getGuess(client_no);
+    int playerID = player + 100;
+
+    char *buf;
+    buf = calloc(BUFFER_SIZE, sizeof(char)); 
+
+    struct messageProperties p;
+
+    int read = recv(client_fd, buf, BUFFER_SIZE, 0);
+
+    if (read == 0) {
+        printf("Client %d dropped out\n", playerID);
+        pArray[player].numLives = -1;
+        return;
+    }
+    else if (read <= 0 && errno == EAGAIN) {         //Timeout for client's move
+        printf("Client %d timed out\n", playerID);
+        pArray[player].won_last_round = false;       //Set to false so they lose a life
+        return;                                      //Return to play_game()
+    }
+    else if (read <= 0){                            //Don't know what to do for this one
+        fprintf(stderr, "Client read failed\n");
+        //PROBABLY SHOULD MAKE A WAY FOR THIS TO RETURN A STATE WHERE THEY LOSE A LIFE IF 
+        //THE MESSAGE IS NOT READABLE
+        //exit(EXIT_FAILURE);
+    }    
+
+    p = parse_message(buf);
 
     //Check whether this guess is correct
-    bool checkedGuess = check(diceRoll, guess.flag, guess.conChoice);
+    bool checkedGuess = check(diceRoll, p.flag, p.conChoice);
     
     //If correct, then make players bool-->won_last_round = true
     //If false, make players bool-->won_last_round = false
     if(checkedGuess) {
-        printf("Client %d made correct guess\n", player + 100);
+        printf("Client %d made a correct guess\n", playerID);
         pArray[player].won_last_round = true;
     } else {
-        printf("Client %d made incorrect guess\n", player + 100);
+        printf("Client %d made an incorrect guess\n", playerID);
         pArray[player].won_last_round = false;
     }
 
