@@ -19,4 +19,4 @@ To do:
   
     Write report
     
-      https://docs.google.com/document/d/1XM3c3JYcjLoogfDgSszmgg3aFBHCcN3LYtxZf6teVmU/edit?usp=sharing
+      https://docs.google.com/document/d/1XM3c3JYcjLoogfDgSszmgg3aFBHCcN3LYtxZf6teVmU/edit
