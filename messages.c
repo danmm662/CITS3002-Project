@@ -7,6 +7,18 @@
 
 #include "game.h"
 
+void send_reject(int client_fd) {
+    char * messbuf;
+    messbuf = calloc(BUFFER_SIZE, sizeof(char));
+    sprintf(messbuf, "REJECT");
+
+    int err = send(client_fd, messbuf, strlen(messbuf), 0);
+    if(err < 0) {
+        fprintf(stderr, "Message failed to send\n");
+        exit(EXIT_FAILURE);
+    }
+    free(messbuf);
+}
 
 void send_message(int client_fd, int flag) {
     //Set up buffer to send string
@@ -52,9 +64,6 @@ void send_message(int client_fd, int flag) {
             break;
         case CANCEL :
             sprintf(messbuf, "CANCEL");
-            break;
-        case REJECT :
-            sprintf(messbuf, "REJECT");
             break;
         case START :
             sprintf(messbuf, "START,%d,%d", MAX_PLAYERS, MAX_LIVES);
@@ -125,7 +134,7 @@ void handleInit(int client_fd) {
 
     if (read <= 0 && errno == EAGAIN) {         //Timeouts for INIT message, send reject message
         fprintf(stderr, "New client timed out\n");
-        send_message(client_fd, REJECT);
+        send_reject(client_fd);
         close(client_fd);
         exit(EXIT_FAILURE);
     }
@@ -135,18 +144,20 @@ void handleInit(int client_fd) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Client %d's message: %s\n", *currPlayers + 100, buf);
+    char * initialMessage = calloc(strlen(buf), sizeof(char));
+    strcpy(initialMessage, buf);
 
     struct messageProperties p;
     p = parse_message(buf);
 
     if(p.flag == INIT && *currPlayers < MAX_PLAYERS) {
+        printf("Client %d's message: %s\n", *currPlayers + 100, initialMessage);
         generateNewPlayer(client_fd, *currPlayers);     //If client sends INIT, give them an id and send it to them
         send_message(client_fd, WELCOME);               //Need to pass id to the message() function, ie message(int flag, int id)
         return;
     } 
     else if(p.flag == INIT && *currPlayers >= MAX_PLAYERS){     //Handling of REJECT message happens here
-        send_message(client_fd, REJECT);        
+        send_reject(client_fd);        
     }
     else {
         fprintf(stderr, "INIT was not the first message received\n");

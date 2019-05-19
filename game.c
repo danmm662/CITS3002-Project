@@ -102,23 +102,32 @@ int main(int argc, char *argv[])
                     exit(EXIT_FAILURE);
                 case 0:
                     //Handle new clients trying to join mid game, send REJECT message to them
+                    playGame();
                     exit(EXIT_SUCCESS);
-                    break;
                 default:
-                    playGame();         //Need to tear down server after play_game()
-                    exit(EXIT_SUCCESS);
+                    break;
             }
 
         }
 
-        /*if (*currPlayers > MAX_PLAYERS) {            //This checks whether game is full or not
-                send_message(client_fd, REJECT);      //Could replace the currPlayers>MAX_PLAYERS with the gameInSession bool
-                printf("Another player attempted to join, was rejected\n");
-                close(client_fd);
-                *currPlayers = *currPlayers - 1;
-        }*/
+        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
 
-        client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);    
+        // Here we deal with players who are joining late -- the game is already in session
+        // We send them a REJECT message
+        if(gameInSession){ 
+            switch(pid = fork()) {
+                case -1:
+                    perror("Fork error\n");
+                    exit(EXIT_FAILURE);
+                case 0:
+                    handleInit(client_fd);
+                    printf("Another player attempted to join, was rejected\n");
+                    close(client_fd);
+                    exit(EXIT_SUCCESS);
+                default:
+                    break; 
+            }
+        }
 
        
         //This is for cancelling a game when too few players show up before the timeout
@@ -139,17 +148,12 @@ int main(int argc, char *argv[])
             case -1:
                 perror("Fork error\n");
                 exit(EXIT_FAILURE);
-            case 0:                         //Child process
-                close(server_fd);
+            case 0:
+                //close(server_fd);
                 handleInit(client_fd);
                 *currPlayers = *currPlayers + 1;     
                 exit(EXIT_SUCCESS);                
             default:
-                //Handle parent process
-                //Set up some shared memory here, so that when you fork() and call generateNewPlayer(), 
-                //the variables that it changes will be changed in the parent process.
-        
-                //playGame() should only ever be called once.
                 sleep(1);   //Without this sleep, the program will go to top of while loop too quickly                
                 break;
         }

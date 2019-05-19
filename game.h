@@ -77,7 +77,7 @@ extern void                     playRound(int, int, int *);
 
 //Functions from messages.c
 extern void                     send_message(int, int);
-extern struct messageProperties getGuess(int);
+extern void                     send_reject(int);
 extern void                     handleInit(int);
 
 //Functions from handleClient.c
