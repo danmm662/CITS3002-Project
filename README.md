@@ -3,6 +3,7 @@ Socket Programming
 
 To do:
   Deal with timeouts for players making a move, make sure they lose a life
+  
   Tier 3:
     Players leaving mid game
     Players trying to join mid game
