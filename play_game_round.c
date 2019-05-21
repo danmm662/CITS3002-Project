@@ -46,19 +46,20 @@ void init_game_data(void) {
 
 void playGame(void) {
 
-    //int playersLeft = MAX_PLAYERS; Commented out because compiler is annoying
     bool victorFound = false;
     int round = 0;
     int playersLeft = MAX_PLAYERS;
+    int *rolled_dice;
 
     while(!victorFound) {
     
         pid_t child_pid, wpid;
         int status = 0;
 
-        int rolled_dice[2] = {1, 1}; // = roll_dice();
+        rolled_dice = roll_dice();
 
         printf("\nRound %d:\n", round + 1);
+        printf("Dice roll is %d,%d\n", rolled_dice[0], rolled_dice[1]);
 
         for(int i = 0; i < MAX_PLAYERS; i++) {
             
@@ -87,7 +88,6 @@ void playGame(void) {
         //Check to see whether or not the players won the last round
         for(int i = 0; i < MAX_PLAYERS; i++) {
             if (pArray[i].eliminated == 0) {        //Decrementing players left for when player drops out
-                //pArray[i].eliminated = round;
                 playersLeft--;
                 continue;
             }
@@ -99,7 +99,7 @@ void playGame(void) {
                 send_message(pArray[i].client_fd, FAIL);
             }
             else {
-                send_message(pArray[i].client_fd, PASS);    //Maybe break after this?
+                send_message(pArray[i].client_fd, PASS);    //Maybe continue after this?
             }
 
             //Then check if they should be eliminated
@@ -169,15 +169,16 @@ void playRound(int player, int client_fd, int *diceRoll) {
     }
     else if (read < 0){                            //Don't know what to do for this one
         fprintf(stderr, "Client read failed\n");
-        //PROBABLY SHOULD MAKE A WAY FOR THIS TO RETURN A STATE WHERE THEY LOSE A LIFE IF 
-        //THE MESSAGE IS NOT READABLE
-        //exit(EXIT_FAILURE);
+        pArray[player].won_last_round = false;
+        return;
     }    
 
     p = parse_message(buf);
 
-    if(p.flag == ERR) {
+    if(p.flag == ERR) {             //Lose a life for an invalid method
         printf("Player %d made an invalid move\n", playerID);
+        pArray[player].won_last_round = false;
+        return;
     }
 
     //Check whether this guess is correct

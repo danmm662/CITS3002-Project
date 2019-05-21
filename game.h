@@ -32,13 +32,13 @@
 #define BUFFER_SIZE  1024
 #define MAX_LIVES    3        
 #define TIMEOUT      5
-#define MAX_PLAYERS  3
 
 
 extern int *currPlayers;
+extern int MAX_PLAYERS;
 
 extern enum {INIT, EVEN, ODD, DOUB, CON, WELCOME, START, 
-             PASS, FAIL, ELIM, VICT, REJECT, CANCEL, ERR //don't know if ERR flag is needed
+             PASS, FAIL, ELIM, VICT, REJECT, CANCEL, ERR, CHEAT //don't know if ERR flag is needed
 }  flag;
 
 extern struct messageProperties {
@@ -82,3 +82,6 @@ extern void                     handleInit(int);
 
 //Functions from handleClient.c
 extern void                     handleClient(int);
+
+//Functions from playSpGame.c
+extern void                     playSpGame(void);

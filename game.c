@@ -2,11 +2,7 @@
 
 int *currPlayers; 
 struct playerInfo *pArray;
-
-//struct playerInfo pArray[MAX_PLAYERS];
-//This specifies all our info for our clients, ie.
-//playerInfo[ID number][client_fd][number of lives][bool: ID number taken]
-//int playerInfo[MAX_PLAYERS][4];
+int MAX_PLAYERS;
 
 /**
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
@@ -25,13 +21,18 @@ struct playerInfo *pArray;
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
+    if (argc < 3)
     {
-        fprintf(stderr, "Usage: %s [port]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [port] [numPlayers]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
     int port = atoi(argv[1]);
+    MAX_PLAYERS = atoi(argv[2]);
+    if(MAX_PLAYERS < 1) {
+        fprintf(stderr, "There must be at least 1 player in game\n");
+        exit(EXIT_FAILURE);
+    }
 
     int server_fd, client_fd, opt_val, err, pid;
     struct sockaddr_in server, client;
@@ -49,7 +50,7 @@ int main(int argc, char *argv[])
     server.sin_addr.s_addr = htonl(INADDR_ANY);    
 
     struct timeval tv;
-    //Set the timeout value to TIMEOUT
+    //Set the timeout value to TIMEOUT, defined in header file
     tv.tv_sec = TIMEOUT;
     tv.tv_usec = 0;
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
@@ -92,7 +93,7 @@ int main(int argc, char *argv[])
             gameInSession = true;
             printf("%d players have joined, game has started\n", MAX_PLAYERS);
             
-            //playGame();
+            //Need to send start message to all clients
             
             //Currently, if we fork and put playGame() in parent it doesn't work, only allows one round
 
@@ -101,8 +102,13 @@ int main(int argc, char *argv[])
                     perror("Fork error\n");
                     exit(EXIT_FAILURE);
                 case 0:
-                    //Handle new clients trying to join mid game, send REJECT message to them
-                    playGame();
+                    //Play singleplayer game if MAX_PLAYERS == 1, else play normal game
+                    if (MAX_PLAYERS == 1) {
+                        playSpGame();
+                    }
+                    else {
+                        playGame();
+                    }
                     exit(EXIT_SUCCESS);
                 default:
                     break;
@@ -114,7 +120,7 @@ int main(int argc, char *argv[])
 
         // Here we deal with players who are joining late -- the game is already in session
         // We send them a REJECT message
-        if(gameInSession && client_fd != -1){ 
+        if(gameInSession && client_fd != -1) { 
             switch(pid = fork()) {
                 case -1:
                     perror("Fork error");

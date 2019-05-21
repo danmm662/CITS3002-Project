@@ -22,7 +22,7 @@ struct messageProperties parse_message(char *s){
 		
 		int id;
 		buf1 = strtok(s, ",");
-		if(buf1 == NULL) {
+		if(buf1 == NULL) {			//Make sure message contains commas
 			return properties;	
 		}
 
@@ -43,7 +43,7 @@ struct messageProperties parse_message(char *s){
 		properties.id = id;
 
 		buf1 = strtok(NULL, ",");
-		if(buf1 == NULL) {
+		if(buf1 == NULL) {				//Make sure message contains commas
 			return properties;	
 		}
 
@@ -52,7 +52,7 @@ struct messageProperties parse_message(char *s){
 		}
 
 		buf1 = strtok(NULL, ",");
-		if(buf1 == NULL) {
+		if(buf1 == NULL) {				//Make sure message contains commas
 			return properties;	
 		}
 
@@ -68,7 +68,7 @@ struct messageProperties parse_message(char *s){
 		else if(strcmp(buf1, "CON") == 0){
 
 			buf1 = strtok(NULL, ",");
-			if(buf1 == NULL) {
+			if(buf1 == NULL) {			 //Make sure message contains commas
 				return properties;	
 			}
 			
@@ -78,7 +78,7 @@ struct messageProperties parse_message(char *s){
 
 			int num = atoi(buf1);
 			
-			if(num < 1 || num > 6){		//Returns the properties struct with the ERR flag
+			if(num < 1 || num > 6) {		//Returns the properties struct with the ERR flag if invalid number
 				return properties;
 			}
 			properties.flag = CON;
