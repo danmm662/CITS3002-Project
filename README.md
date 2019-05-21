@@ -16,6 +16,10 @@ To do:
       Handle incorrect moves without crashing server --DONE
     
       Kick cheating players
+      
+    Tear down server after game is complete
+    
+    Clean up code/seperate the functions into more files
   
     Write report
     
