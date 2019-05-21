@@ -7,7 +7,7 @@ To do:
   
     Tier 3:
     
-      Players leaving mid game --only works sometimes
+      Players leaving mid game --only works sometimes --hopefully working properly now
     
       Players trying to join mid game --DONE
   
