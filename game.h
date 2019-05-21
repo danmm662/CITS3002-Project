@@ -32,7 +32,7 @@
 #define BUFFER_SIZE  1024
 #define MAX_LIVES    3        
 #define TIMEOUT      5
-#define MAX_PLAYERS  2
+#define MAX_PLAYERS  3
 
 
 extern int *currPlayers;
@@ -53,7 +53,7 @@ extern struct playerInfo {
     int numLives;
     bool taken;
     bool won_last_round;
-    int eliminated;               //Cases for eliminated: -2 dropped out, -1 still alive, >-1 is round elimmed
+    int eliminated;               //Cases for eliminated: 0 for dropped out, -1 still alive, >-1 is round elimmed
 } playerInfo;
 
 //extern struct playerInfo player1, player2, player3, player4;    Don't think we need this

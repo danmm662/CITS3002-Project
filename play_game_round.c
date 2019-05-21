@@ -58,20 +58,25 @@ void playGame(void) {
 
         int rolled_dice[2] = {1, 1}; // = roll_dice();
 
+        printf("\nRound %d:\n", round + 1);
+
         for(int i = 0; i < MAX_PLAYERS; i++) {
             
-            //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
-            //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
-            if((child_pid = fork()) == 0) {
-                int client_no = pArray[i].client_fd;
-                //Should our play round return a bool here?
+            //Only play the round with players not eliminated
+            if (pArray[i].eliminated == -1) {
+                //WE ARE forking() HERE AGAIN. SO WE NEED TO SET UP SOME SHARED MEMORY, 
+                //SUCH THAT WE CAN RETURN WHETHER OR NOT THEY WON OR LOST THE ROUND...
+                if((child_pid = fork()) == 0) {
+                    int client_no = pArray[i].client_fd;
+                    //Should our play round return a bool here?
 
-                //THIS PLAY ROUND HAS TO WAIT FOR THE CLIENT TO SEND A MESSAGE FIRST
-                //AND THEN PROCESS THE ROUND... SO MAYBE HAVE A FUNCTION THAT JUST SITS THERE AND WAITS FOR A CLIENT 
-                //TO CHOOSE AN OPTION
-                sleep(2);
-                playRound(i, client_no, rolled_dice);
-                exit(EXIT_SUCCESS);
+                    //THIS PLAY ROUND HAS TO WAIT FOR THE CLIENT TO SEND A MESSAGE FIRST
+                    //AND THEN PROCESS THE ROUND... SO MAYBE HAVE A FUNCTION THAT JUST SITS THERE AND WAITS FOR A CLIENT 
+                    //TO CHOOSE AN OPTION
+                    sleep(2);
+                    playRound(i, client_no, rolled_dice);
+                    exit(EXIT_SUCCESS);
+                }
             }
         }
 
@@ -81,20 +86,20 @@ void playGame(void) {
 
         //Check to see whether or not the players won the last round
         for(int i = 0; i < MAX_PLAYERS; i++) {
-            if (pArray[i].eliminated == -2) {        //Decrementing players left for when player drops out
+            if (pArray[i].eliminated == 0) {        //Decrementing players left for when player drops out
+                //pArray[i].eliminated = round;
                 playersLeft--;
-                pArray[i].eliminated = 0;
-                break;
+                continue;
             }
-            else if (pArray[i].eliminated > -1) {
-                break;
+            else if (pArray[i].eliminated > 0) {    //Skip over players already eliminated
+                continue;
             }
-            else if(!pArray[i].won_last_round) {
+            else if (!pArray[i].won_last_round) {
                 pArray[i].numLives--;
                 send_message(pArray[i].client_fd, FAIL);
             }
             else {
-                send_message(pArray[i].client_fd, PASS);
+                send_message(pArray[i].client_fd, PASS);    //Maybe break after this?
             }
 
             //Then check if they should be eliminated
@@ -114,13 +119,14 @@ void playGame(void) {
                     send_message(pArray[i].client_fd, VICT);
                     close(pArray[i].client_fd);
                 }
-                else {
+                else if(pArray[i].eliminated == round) {  //Only need to send ELIM to players eliminated this round
+                    printf("Player %d eliminated\n", i + 100);
                     send_message(pArray[i].client_fd, ELIM);
                     close(pArray[i].client_fd);
                 }
                 victorFound = true;
             }
-            else if (playersLeft == 0) {            //Case if there is a draw between 2 or more players
+            else if (playersLeft == 0) {            //If there is a draw between 2 or more players
                 if (pArray[i].eliminated == round) {
                     printf("Player %d won!\n", pArray[i].playerID);
                     send_message(pArray[i].client_fd, VICT);
@@ -129,7 +135,8 @@ void playGame(void) {
                 victorFound = true;
             }
             else {                              //When game hasn't finished yet
-                if (pArray[i].eliminated > 0) {
+                if (pArray[i].eliminated == round) {
+                    printf("Player %d eliminated\n", i + 100);
                     send_message(pArray[i].client_fd, ELIM);
                     close(pArray[i].client_fd);
                 }
@@ -151,12 +158,12 @@ void playRound(int player, int client_fd, int *diceRoll) {
     int read = recv(client_fd, buf, BUFFER_SIZE, 0);
 
     if (read == 0) {
-        printf("Client %d dropped out\n", playerID);
-        pArray[player].eliminated = -2;
+        printf("Player %d dropped out\n", playerID);
+        pArray[player].eliminated = 0;
         return;
     }
     else if (read < 0 && errno == EAGAIN) {         //Timeout for client's move
-        printf("Client %d timed out\n", playerID);
+        printf("Player %d timed out\n", playerID);
         pArray[player].won_last_round = false;       //Set to false so they lose a life
         return;                                      //Return to play_game()
     }
@@ -170,7 +177,7 @@ void playRound(int player, int client_fd, int *diceRoll) {
     p = parse_message(buf);
 
     if(p.flag == ERR) {
-        printf("Client")
+        printf("Player %d made an invalid move\n", playerID);
     }
 
     //Check whether this guess is correct
@@ -179,10 +186,10 @@ void playRound(int player, int client_fd, int *diceRoll) {
     //If correct, then make players bool-->won_last_round = true
     //If false, make players bool-->won_last_round = false
     if(checkedGuess) {
-        printf("Client %d made a correct guess\n", playerID);
+        printf("Player %d made a correct guess\n", playerID);
         pArray[player].won_last_round = true;
     } else {
-        printf("Client %d made an incorrect guess\n", playerID);
+        printf("Player %d made an incorrect guess\n", playerID);
         pArray[player].won_last_round = false;
     }
 
