@@ -2,26 +2,12 @@
 Socket Programming 
 
 To do:
-  
-    Deal with timeouts for players making a move, make sure they lose a life --DONE
-  
-    Tier 3:
-    
-      Players leaving mid game --only works sometimes --hopefully working properly now
-    
-      Players trying to join mid game --DONE
-  
-    Tier 4:
-    
-      Handle incorrect moves without crashing server --DONE
-    
-      Kick cheating players
-      
-    Tear down server after game is complete
     
     Clean up code/seperate the functions into more files
   
-    Write report
+    Finish report
+    
+    Put all assumptions in this README, also how to use server
     
   https://docs.google.com/document/d/1XM3c3JYcjLoogfDgSszmgg3aFBHCcN3LYtxZf6teVmU/edit
   
