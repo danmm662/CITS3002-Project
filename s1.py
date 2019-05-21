@@ -47,9 +47,10 @@ try:
                 if "WELCOME" in mess:
                     id = int(mess[-3:])
                     print("Our id is %d" % id)
-                    message = ('%d,MOV,CON,3' % id).encode()
+                    message = ('%d,MOV,CON,1' % id).encode()
                     print("Received welcome message")
                     sock.sendall(message) # Client has ID 100
+                    #sock.sendall(message)
                     print('sending,"%s"' % message)
                 elif "ELIM" in mess:
                     print("We lost, closing connection")
@@ -61,6 +62,7 @@ try:
                     print('sending,"%s"' % message)
                 elif "FAIL" in mess:
                     print("Your choice was wrong")
+                    #message = ('101,MOV,ODD').encode()
                     message = ('%d,MOV,ODD' % id).encode()
                     sock.sendall(message)
                     print('sending,"%s"' % message)

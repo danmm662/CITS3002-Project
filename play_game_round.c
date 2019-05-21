@@ -49,14 +49,19 @@ void playGame(void) {
     bool victorFound = false;
     int round = 0;
     int playersLeft = MAX_PLAYERS;
-    int *rolled_dice;
+    //int *rolled_dice;
+
+    for(int i = 0; i < MAX_PLAYERS; i++) {
+
+    }
 
     while(!victorFound) {
     
         pid_t child_pid, wpid;
         int status = 0;
 
-        rolled_dice = roll_dice();
+        //rolled_dice = roll_dice();
+        int rolled_dice[2] = {1, 1};
 
         printf("\nRound %d:\n", round + 1);
         printf("Dice roll is %d,%d\n", rolled_dice[0], rolled_dice[1]);
@@ -87,7 +92,14 @@ void playGame(void) {
 
         //Check to see whether or not the players won the last round
         for(int i = 0; i < MAX_PLAYERS; i++) {
-            if (pArray[i].eliminated == 0) {        //Decrementing players left for when player drops out
+            if (pArray[i].eliminated == -2) {               //Kicking cheating player
+                send_message(pArray[i].client_fd, ELIM);
+                pArray[i].eliminated = 0;
+                playersLeft--;
+                continue;
+            }
+            else if (pArray[i].eliminated == -3) {        //Decrementing players left for when player drops out
+                pArray[i].eliminated = 0;
                 playersLeft--;
                 continue;
             }
@@ -159,7 +171,7 @@ void playRound(int player, int client_fd, int *diceRoll) {
 
     if (read == 0) {
         printf("Player %d dropped out\n", playerID);
-        pArray[player].eliminated = 0;
+        pArray[player].eliminated = -3;
         return;
     }
     else if (read < 0 && errno == EAGAIN) {         //Timeout for client's move
@@ -173,9 +185,14 @@ void playRound(int player, int client_fd, int *diceRoll) {
         return;
     }    
 
-    p = parse_message(buf);
+    p = parse_message(buf, client_fd);
 
-    if(p.flag == ERR) {             //Lose a life for an invalid method
+    if(p.flag == CHEAT) {                       //Kicked for cheating
+        printf("Player %d found cheating, kicked from game\n", playerID);
+        pArray[player].eliminated = -2;
+        return;
+    }
+    else if(p.flag == ERR) {             //Lose a life for an invalid method
         printf("Player %d made an invalid move\n", playerID);
         pArray[player].won_last_round = false;
         return;

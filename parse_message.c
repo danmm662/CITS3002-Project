@@ -3,7 +3,7 @@
 //Determines what type of message is received, checks the user id,
 //returns the message type and int choice if it is the contains choice
 
-struct messageProperties parse_message(char *s){
+struct messageProperties parse_message(char *s, int client_fd){
 	
 	//Initialise the properties structure, sets default values for it
 	struct messageProperties properties;
@@ -18,8 +18,11 @@ struct messageProperties parse_message(char *s){
 		properties.flag = INIT;
 	}
 	else {  
-		// need to first check if the first 3 characters of received message is a valid user id
-		
+
+		if(strlen(s) > 13) {	//Check if packet is too long
+			return properties;
+		}
+
 		int id;
 		buf1 = strtok(s, ",");
 		if(buf1 == NULL) {			//Make sure message contains commas
@@ -28,15 +31,11 @@ struct messageProperties parse_message(char *s){
 
 		id = atoi(buf1);  //This will cause an error if buf1 is not an int, may need to test for that first
 
-		//Check if id provided is a valid id or not, tell client if it isn't
-		//Need to modify this so it checks that the playerID and the client_fd match as well
-		for(int i = 0; i < MAX_PLAYERS; i++){
-			if(pArray[i].playerID == id) {
-				break;
-			}
-			else if(i == (MAX_PLAYERS - 1)) {	//If id isn't found, exit out
-				fprintf(stderr, "Unable to find client's id\n");
-				exit(EXIT_FAILURE);
+		//Ensures that id matches playerID stored in array, mark player as cheating if not
+		if(client_fd != -1) {
+			if(pArray[id - 100].client_fd != client_fd) {
+				properties.flag = CHEAT;
+				return properties;
 			}
 		}
 		

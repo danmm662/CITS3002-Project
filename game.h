@@ -53,15 +53,16 @@ extern struct playerInfo {
     int numLives;
     bool taken;
     bool won_last_round;
-    int eliminated;               //Cases for eliminated: 0 for dropped out, -1 still alive, >-1 is round elimmed
-} playerInfo;
+    int eliminated;               //Cases for eliminated: -3 for dropped out, -2 for cheating
+    } playerInfo;                 // -1 still alive, >-1 is round elimmed
+
 
 //extern struct playerInfo player1, player2, player3, player4;    Don't think we need this
 extern struct playerInfo *pArray;
 
 
 //Functions from parse_message
-extern struct messageProperties parse_message(char *);
+extern struct messageProperties parse_message(char *, int);
 
 //Functions from play_game_round.c
 extern int*                     roll_dice(void);

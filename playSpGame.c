@@ -15,7 +15,6 @@ void playSpGame(void) {
 	while(true) {
 
 		sleep(1);
-		//Check if player should be eliminated
 
 		diceRoll = roll_dice();
 
@@ -39,7 +38,7 @@ void playSpGame(void) {
 			p.eliminated = 0;
 		}
 		else {						//Normal case, successful read from client
-			mess = parse_message(buf);
+			mess = parse_message(buf, p.client_fd);
 
 			if(mess.flag == ERR) {             //Lose a life for an invalid move
 				printf("Player made an invalid move\n");

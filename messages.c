@@ -148,7 +148,7 @@ void handleInit(int client_fd) {
     strcpy(initialMessage, buf);
 
     struct messageProperties p;
-    p = parse_message(buf);
+    p = parse_message(buf, -1);
 
     if(p.flag == INIT && *currPlayers < MAX_PLAYERS) {
         printf("Client %d's message: %s\n", *currPlayers + 100, initialMessage);
