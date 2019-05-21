@@ -2,6 +2,7 @@
 
 int *currPlayers; 
 struct playerInfo *pArray;
+bool *gameFinished;
 int MAX_PLAYERS;
 
 /**
@@ -89,13 +90,23 @@ int main(int argc, char *argv[])
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (true) {  //Loop for accepting multiple clients
 
+        if(*gameFinished) {
+            printf("Game completed, closing server\n");
+            close(server_fd);
+            exit(EXIT_SUCCESS);
+        }
+
         if(!gameInSession && *currPlayers == MAX_PLAYERS) {
             gameInSession = true;
+
+            //Set timeout in parent to be much shorter
+            struct timeval t;
+            //Set the timeout value to 5
+            t.tv_sec = 5;
+            t.tv_usec = 0;
+            setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&t, sizeof t);
+
             printf("%d players have joined, game has started\n", MAX_PLAYERS);
-            
-            //Need to send start message to all clients
-            
-            //Currently, if we fork and put playGame() in parent it doesn't work, only allows one round
 
             switch(pid = fork()) {
                 case -1:
@@ -109,6 +120,7 @@ int main(int argc, char *argv[])
                     else {
                         playGame();
                     }
+                    *gameFinished = true;
                     exit(EXIT_SUCCESS);
                 default:
                     break;
@@ -160,7 +172,7 @@ int main(int argc, char *argv[])
                     *currPlayers = *currPlayers + 1;     
                     exit(EXIT_SUCCESS);                
                 default:
-                    sleep(1);   //Without this sleep, the program will go to top of while loop too quickly                
+                    wait(NULL);   //Still seems to work with multiple clients joining at same time with this wait               
                     break;
             }
         }

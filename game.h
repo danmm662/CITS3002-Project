@@ -29,16 +29,18 @@
 #include <ctype.h>
 
 //Global variables/data structures
+
 #define BUFFER_SIZE  1024
 #define MAX_LIVES    3        
-#define TIMEOUT      5
+#define TIMEOUT      30
 
 
 extern int *currPlayers;
+extern bool *gameFinished;
 extern int MAX_PLAYERS;
 
 extern enum {INIT, EVEN, ODD, DOUB, CON, WELCOME, START, 
-             PASS, FAIL, ELIM, VICT, REJECT, CANCEL, ERR, CHEAT //don't know if ERR flag is needed
+             PASS, FAIL, ELIM, VICT, REJECT, CANCEL, ERR, CHEAT 
 }  flag;
 
 extern struct messageProperties {
@@ -57,7 +59,7 @@ extern struct playerInfo {
     } playerInfo;                 // -1 still alive, >-1 is round elimmed
 
 
-//extern struct playerInfo player1, player2, player3, player4;    Don't think we need this
+
 extern struct playerInfo *pArray;
 
 

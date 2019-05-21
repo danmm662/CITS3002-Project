@@ -30,6 +30,7 @@ message = 'This is the message.  It will be repeated.'.encode()
 try:
    
         # Send data
+        sleep(10)
         message = 'INIT'.encode()
         print ('sending "%s"' % message)
         sock.sendall(message)

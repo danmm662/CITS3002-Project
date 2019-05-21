@@ -10,7 +10,7 @@
 void init_game_data(void) {
     
     currPlayers = mmap( NULL,    //Setting the number of current players to shared memory    
-                        sizeof(*currPlayers),  
+                        sizeof(int),  
                         PROT_READ | PROT_WRITE,      //Read and write access to memory
                         MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
                         -1,
@@ -18,6 +18,18 @@ void init_game_data(void) {
 
     if(currPlayers == MAP_FAILED){
         fprintf(stderr, "Unable to map currPlayers to shared memory\n");
+        exit(EXIT_FAILURE);
+    }
+
+    gameFinished = mmap( NULL,        //Setting the array of player info to shared memory
+                   sizeof(bool),        
+                   PROT_READ | PROT_WRITE,      //Read and write access to memory
+                   MAP_SHARED | MAP_ANONYMOUS,  //Shared so all processes can access
+                   -1,
+                   0 );
+
+    if(gameFinished == MAP_FAILED){
+        fprintf(stderr, "Unable to map pArray to shared memory\n");
         exit(EXIT_FAILURE);
     }
 
@@ -33,7 +45,11 @@ void init_game_data(void) {
         exit(EXIT_FAILURE);
     }
 
+    
+
     *currPlayers = 0;
+    
+    *gameFinished = false;
 
     for(int i = 0; i < MAX_PLAYERS; i++) {
         pArray[i].playerID = (i + 100);
@@ -49,10 +65,11 @@ void playGame(void) {
     bool victorFound = false;
     int round = 0;
     int playersLeft = MAX_PLAYERS;
-    //int *rolled_dice;
+    int *rolled_dice;
 
+    //Send START message to all players
     for(int i = 0; i < MAX_PLAYERS; i++) {
-
+        send_message(pArray[i].client_fd, START);
     }
 
     while(!victorFound) {
@@ -60,8 +77,8 @@ void playGame(void) {
         pid_t child_pid, wpid;
         int status = 0;
 
-        //rolled_dice = roll_dice();
-        int rolled_dice[2] = {1, 1};
+        rolled_dice = roll_dice();
+        //int rolled_dice[2] = {1, 1};
 
         printf("\nRound %d:\n", round + 1);
         printf("Dice roll is %d,%d\n", rolled_dice[0], rolled_dice[1]);
@@ -79,7 +96,8 @@ void playGame(void) {
                     //THIS PLAY ROUND HAS TO WAIT FOR THE CLIENT TO SEND A MESSAGE FIRST
                     //AND THEN PROCESS THE ROUND... SO MAYBE HAVE A FUNCTION THAT JUST SITS THERE AND WAITS FOR A CLIENT 
                     //TO CHOOSE AN OPTION
-                    sleep(2);
+                    //Can remove this sleep, game plays out instantaneously and is hard to follow
+                    sleep(1);
                     playRound(i, client_no, rolled_dice);
                     exit(EXIT_SUCCESS);
                 }
@@ -103,7 +121,7 @@ void playGame(void) {
                 playersLeft--;
                 continue;
             }
-            else if (pArray[i].eliminated > 0) {    //Skip over players already eliminated
+            else if (pArray[i].eliminated >= 0) {    //Skip over players already eliminated
                 continue;
             }
             else if (!pArray[i].won_last_round) {
@@ -118,7 +136,7 @@ void playGame(void) {
             if(pArray[i].numLives < 1) {
                 pArray[i].eliminated = round;
                 playersLeft--;
-                sleep(1);
+                //sleep(1);
             }
         }
         
@@ -155,6 +173,7 @@ void playGame(void) {
             }
         }
     }
+    return;
 }
     
 void playRound(int player, int client_fd, int *diceRoll) {
@@ -259,8 +278,9 @@ bool check(int * dice, int flag, int con_choice) {
         case CON :
             return check_contains(dice, con_choice);
         default :
+            //Client just loses a life for this, not sure if needed
             fprintf(stderr, "Invalid choice\n");
-            exit(EXIT_FAILURE);
+            return false;
     }
 }
 

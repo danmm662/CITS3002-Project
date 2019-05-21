@@ -70,11 +70,11 @@ void playSpGame(void) {
 			printf("Player lost all lives, eliminated\n");
 			send_message(p.client_fd, ELIM);
 			close(p.client_fd);
-			exit(EXIT_SUCCESS);
+			return;
 		}
-		else if (p.eliminated == 0) {
+		else if (p.eliminated == 0) {	//For when player drops out
 			close(p.client_fd);
-			exit(EXIT_SUCCESS);
+			return;
 		}
 
 	}
