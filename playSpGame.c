@@ -1,4 +1,4 @@
-#include "game.h"
+#include "game.h" 
 
 //For playing game with a single player, implementing tier 1
 void playSpGame(void) {
@@ -7,7 +7,7 @@ void playSpGame(void) {
 	struct messageProperties mess;
 
 	char *buf;
-	int *diceRoll;
+	int *diceRoll = calloc(2, sizeof(int));
 	int round = 0;
 
 	send_message(p.client_fd, START);
@@ -23,7 +23,8 @@ void playSpGame(void) {
 		int read = recv(p.client_fd, buf, BUFFER_SIZE, 0);
 
 		round++;
-		printf("Round %d:\n", round);
+		printf("\nRound %d:\n", round);
+		printf("Dice roll is %d,%d\n", diceRoll[0], diceRoll[1]);
 
 		if (read == 0) {
 			printf("Player dropped out\n");

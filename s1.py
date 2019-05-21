@@ -1,4 +1,4 @@
-"""
+""" 
 This is a simple example of a client program written in Python.
 Again, this is a very basic example to complement the 'basic_server.c' example.
 
@@ -30,7 +30,7 @@ message = 'This is the message.  It will be repeated.'.encode()
 try:
    
         # Send data
-        sleep(10)
+        #sleep(10)
         message = 'INIT'.encode()
         print ('sending "%s"' % message)
         sock.sendall(message)

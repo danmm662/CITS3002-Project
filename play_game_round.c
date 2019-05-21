@@ -16,7 +16,7 @@ void init_game_data(void) {
                         -1,
                         0 );
 
-    if(currPlayers == MAP_FAILED){
+    if(currPlayers == MAP_FAILED) {
         fprintf(stderr, "Unable to map currPlayers to shared memory\n");
         exit(EXIT_FAILURE);
     }
@@ -28,7 +28,7 @@ void init_game_data(void) {
                    -1,
                    0 );
 
-    if(gameFinished == MAP_FAILED){
+    if(gameFinished == MAP_FAILED) {
         fprintf(stderr, "Unable to map pArray to shared memory\n");
         exit(EXIT_FAILURE);
     }
@@ -65,7 +65,7 @@ void playGame(void) {
     bool victorFound = false;
     int round = 0;
     int playersLeft = MAX_PLAYERS;
-    int *rolled_dice;
+    int *rolled_dice; 
 
     //Send START message to all players
     for(int i = 0; i < MAX_PLAYERS; i++) {
@@ -142,14 +142,14 @@ void playGame(void) {
         
 
         //Check if there is a victor and send victory message if there is one
-        for(int i = 0; i < MAX_PLAYERS; i++) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
             if (playersLeft == 1){          //Normal case, if there is one player left in game
-                if (pArray[i].eliminated < 0){       //Find player not elimmed, send VICT
+                if (pArray[i].eliminated < 0) {       //Find player not elimmed, send VICT
                     printf("Player %d won!\n", pArray[i].playerID);
                     send_message(pArray[i].client_fd, VICT);
                     close(pArray[i].client_fd);
                 }
-                else if(pArray[i].eliminated == round) {  //Only need to send ELIM to players eliminated this round
+                else if (pArray[i].eliminated == round) {  //Only need to send ELIM to players eliminated this round
                     printf("Player %d eliminated\n", i + 100);
                     send_message(pArray[i].client_fd, ELIM);
                     close(pArray[i].client_fd);
@@ -225,7 +225,8 @@ void playRound(int player, int client_fd, int *diceRoll) {
     if(checkedGuess) {
         printf("Player %d made a correct guess\n", playerID);
         pArray[player].won_last_round = true;
-    } else {
+    } 
+    else {
         printf("Player %d made an incorrect guess\n", playerID);
         pArray[player].won_last_round = false;
     }

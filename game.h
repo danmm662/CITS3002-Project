@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include <stdbool.h> 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h> 
@@ -56,7 +56,7 @@ extern struct playerInfo {
     bool taken;
     bool won_last_round;
     int eliminated;               //Cases for eliminated: -3 for dropped out, -2 for cheating
-    } playerInfo;                 // -1 still alive, >-1 is round elimmed
+} playerInfo;                     // -1 still alive, >-1 is round elimmed
 
 
 

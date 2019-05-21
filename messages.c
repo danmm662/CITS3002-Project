@@ -119,7 +119,7 @@ void send_message(int client_fd, int flag) {
 
     return p;
 }*/
-
+ 
 /*
 * @returns a bool which is true if we received an INIT, false if we do not
 * The whole function will only be called when we have forked() another process,

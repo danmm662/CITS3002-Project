@@ -1,8 +1,11 @@
 #include "game.h"
 
+//Shared memory
 int *currPlayers; 
 struct playerInfo *pArray;
 bool *gameFinished;
+
+//Global variables
 int MAX_PLAYERS;
 
 /**
@@ -85,7 +88,7 @@ int main(int argc, char *argv[])
     socklen_t client_len = sizeof(client);
 
     bool gameInSession = false;
-    //bool gameCompleted = false;
+    //bool gameCompleted = false; 
     //time_t start = time(NULL);
     //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
     while (true) {  //Loop for accepting multiple clients
@@ -99,7 +102,7 @@ int main(int argc, char *argv[])
         if(!gameInSession && *currPlayers == MAX_PLAYERS) {
             gameInSession = true;
 
-            //Set timeout in parent to be much shorter
+            //Set timeout in parent to be much shorter so game can be closed relatively quickly
             struct timeval t;
             //Set the timeout value to 5
             t.tv_sec = 5;
@@ -110,10 +113,11 @@ int main(int argc, char *argv[])
 
             switch(pid = fork()) {
                 case -1:
-                    perror("Fork error\n");
+                    perror("Fork error");
                     exit(EXIT_FAILURE);
                 case 0:
                     //Play singleplayer game if MAX_PLAYERS == 1, else play normal game
+                    close(server_fd);
                     if (MAX_PLAYERS == 1) {
                         playSpGame();
                     }
@@ -131,7 +135,7 @@ int main(int argc, char *argv[])
         client_fd = accept(server_fd, (struct sockaddr *)&client, &client_len);
 
         // Here we deal with players who are joining late -- the game is already in session
-        // We send them a REJECT message
+        // Fork here to allow rejecting of multiple clients at same time
         if(gameInSession && client_fd != -1) { 
             switch(pid = fork()) {
                 case -1:
@@ -164,10 +168,10 @@ int main(int argc, char *argv[])
         if(!gameInSession){
             switch(pid = fork()) {
                 case -1:
-                    perror("Fork error\n");
+                    perror("Fork error");
                     exit(EXIT_FAILURE);
                 case 0:
-                    //close(server_fd);
+                    close(server_fd);
                     handleInit(client_fd);
                     *currPlayers = *currPlayers + 1;     
                     exit(EXIT_SUCCESS);                
