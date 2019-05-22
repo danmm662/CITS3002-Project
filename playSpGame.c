@@ -1,6 +1,11 @@
+// CITS3002 Project 2019
+// Names:            Kieren Underwood,   Daniel Maitland
+// Student Numbers:  21315543            21986102
+// Compiles on Linux
+
 #include "game.h" 
 
-//For playing game with a single player, implementing tier 1
+//For playing game with a single player, implementing Tier 1
 void playSpGame(void) {
 
 	struct playerInfo p = pArray[0];
@@ -12,6 +17,7 @@ void playSpGame(void) {
 
 	send_message(p.client_fd, START);
 
+	//Enters this while loop and continues to play rounds until numLives < 0
 	while(true) {
 
 		sleep(1);
@@ -26,6 +32,7 @@ void playSpGame(void) {
 		printf("\nRound %d:\n", round);
 		printf("Dice roll is %d,%d\n", diceRoll[0], diceRoll[1]);
 
+		//Now we read a guess and check to see whether they are correct
 		if (read == 0) {
 			printf("Player dropped out\n");
 			p.eliminated = 0;
@@ -59,6 +66,7 @@ void playSpGame(void) {
 			}
 		}  
 
+		//Decrements numLives if guess was incorrect
 		if (p.won_last_round) {
 			send_message(p.client_fd, PASS);
 		}
@@ -67,6 +75,8 @@ void playSpGame(void) {
 			p.numLives--;
 		}
 
+		//Checks to see if the player should be eliminated
+		//We do not check for cheating in Tier 1
 		if (p.numLives < 1) {			//Normal case, when player runs out of lives
 			printf("Player lost all lives, eliminated\n");
 			send_message(p.client_fd, ELIM);

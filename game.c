@@ -1,3 +1,8 @@
+// CITS3002 Project 2019
+// Names:            Kieren Underwood,   Daniel Maitland
+// Student Numbers:  21315543            21986102
+// Compiles on Linux
+
 #include "game.h"
 
 //Shared memory
@@ -12,16 +17,6 @@ int MAX_PLAYERS;
 * Based on code found at https://github.com/mafintosh/echo-servers.c (Copyright (c) 2014 Mathias Buus)
 * Copyright 2019 Nicholas Pritchard, Ryan Bunney
 **/
-
-/**
- * @brief A simple example of a network server written in C implementing a basic echo
- * 
- * This is a good starting point for observing C-based network code but is by no means complete.
- * We encourage you to use this as a starting point for your project if you're not sure where to start.
- * Food for thought:
- *   - Can we wrap the action of sending ALL of out data and receiving ALL of the data?
- */
-
 
 int main(int argc, char *argv[])
 {
@@ -74,8 +69,7 @@ int main(int argc, char *argv[])
 
     init_game_data();
 
-    //Adding this new function to listen
-    //listenForPlayers(server_fd, port);
+    //Listen for connections to the server
     err = listen(server_fd, 128);
     if (err < 0)
     {
@@ -88,17 +82,20 @@ int main(int argc, char *argv[])
     socklen_t client_len = sizeof(client);
 
     bool gameInSession = false;
-    //bool gameCompleted = false; 
-    //time_t start = time(NULL);
-    //This timeout isn't needed, the accept function will timeout after 30 seconds anyway
-    while (true) {  //Loop for accepting multiple clients
+    
+    /*Loop for accepting multiple clients
+    * The program will fork(), the child process will deal with handling INIT messages
+    * The parent process will deal with checking for the next client*/
+    while (true) {  
 
+        //When game is finished, close the server and exit
         if(*gameFinished) {
             printf("Game completed, closing server\n");
             close(server_fd);
             exit(EXIT_SUCCESS);
         }
 
+        //When we have reached our MAX_PLAYERS, we enter the game, and set gameInSession = true
         if(!gameInSession && *currPlayers == MAX_PLAYERS) {
             gameInSession = true;
 
@@ -111,6 +108,8 @@ int main(int argc, char *argv[])
 
             printf("%d players have joined, game has started\n", MAX_PLAYERS);
 
+            /* We fork() and the child process runs the game with our clients
+            *  The parent process continues to reject clients who request to join the game */
             switch(pid = fork()) {
                 case -1:
                     perror("Fork error");
@@ -124,6 +123,7 @@ int main(int argc, char *argv[])
                     else {
                         playGame();
                     }
+                    //Once our game is finished
                     *gameFinished = true;
                     exit(EXIT_SUCCESS);
                 default:
@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
+        //Forks() and handles the INIT message in the child process
         if(!gameInSession){
             switch(pid = fork()) {
                 case -1:
@@ -176,18 +177,11 @@ int main(int argc, char *argv[])
                     *currPlayers = *currPlayers + 1;     
                     exit(EXIT_SUCCESS);                
                 default:
-                    wait(NULL);   //Still seems to work with multiple clients joining at same time with this wait               
+                    wait(NULL);            
                     break;
             }
         }
         
     }  
-
-    /*
-    * After you call play game you are going to have to deal with other clients who try to 
-    * enter the game. You will have to continue listening in a while(true) loop, and then fork()
-    * the process whenever you catch someone wanting to join. 
-    */
-
     exit(EXIT_SUCCESS); 
 }

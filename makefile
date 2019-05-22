@@ -5,7 +5,7 @@
 
 PROJECT = game
 HEADERS = $(PROJECT).h
-OBJ     = game.o messages.o play_game_round.o parse_message.o playSpGame.o
+OBJ     = game.o messages.o play_game_round.o parse_message.o playSpGame.o dice_and_check.o
  
 
 C99 = cc -std=c99

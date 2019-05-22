@@ -1,8 +1,17 @@
+// CITS3002 Project 2019
+// Names:            Kieren Underwood,   Daniel Maitland
+// Student Numbers:  21315543            21986102
+// Compiles on Linux
+
 #include "game.h" 
 
-//Determines what type of message is received, checks the user id,
-//returns the message type and int choice if it is the contains choice
-
+/*
+* Determines what type of message is received, checks the user id,
+* Returns the message type and int choice if it is the contains choice
+* If any error is found, or the packet is too long, an ERR flag is sent back
+* The default when ERR is found is to have the client lose a life
+* If the client_fd does not match the playerID, we define this as cheating, and the player will be kicked
+*/
 struct messageProperties parse_message(char *s, int client_fd){
 	
 	//Initialise the properties structure, sets default values for it
@@ -55,6 +64,7 @@ struct messageProperties parse_message(char *s, int client_fd){
 			return properties;	
 		}
 
+		//Now we check what guess the client chose
 		if(strcmp(buf1, "EVEN") == 0){		
 			properties.flag = EVEN;			
 		}

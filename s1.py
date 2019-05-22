@@ -1,19 +1,7 @@
-""" 
-This is a simple example of a client program written in Python.
-Again, this is a very basic example to complement the 'basic_server.c' example.
-
-
-When testing, start by initiating a connection with the server by sending the "init" message outlined in 
-the specification document. Then, wait for the server to send you a message saying the game has begun. 
-
-Once this message has been read, plan out a couple of turns on paper and hard-code these messages to
-and from the server (i.e. play a few rounds of the 'dice game' where you know what the right and wrong 
-dice rolls are). You will be able to edit this trivially later on; it is often easier to debug the code
-if you know exactly what your expected values are. 
-
-From this, you should be able to bootstrap message-parsing to and from the server whilst making it easy to debug.
-Then, start to add functions in the server code that actually 'run' the game in the background. 
-""" 
+# CITS3002 Project 2019
+# Names:            Kieren Underwood,   Daniel Maitland
+# Student Numbers:  21315543            21986102
+# Compiles on Linux
 
 import socket
 from time import sleep
