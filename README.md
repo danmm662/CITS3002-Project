@@ -19,15 +19,9 @@ Then run python clients on seperate terminal an arbitrary number of times:
   or 
   - "python [your_client_name].py"
 
-
-To do:
-  
-    Finish report    
-  https://docs.google.com/document/d/1XM3c3JYcjLoogfDgSszmgg3aFBHCcN3LYtxZf6teVmU/edit
-
 # Assumptions:
   
-- A single-player game (ie. MAX_PLAYERS = 1) does check for cheating. 
+- A single-player game (ie. MAX_PLAYERS = 1) does not check for cheating. 
 
 - MAX_PLAYERS is set at the start-up of the game, and must be reached--exactly--if the game is to commence. The game does not allow a range of players, eg. 4-8 players.
 
